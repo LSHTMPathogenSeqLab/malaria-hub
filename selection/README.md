@@ -35,14 +35,21 @@ rehh::calc_candidate_regions()
 
 # Env preparation
 
-```{r}
-In conda
+### Create conda env
+```{bash}
 conda create -n selection r-base r-dplyr r-data.table r-optparse r-stringr r-ggplot2 r-ggrepel r-tidyr --channel conda-forge
+conda activate selection
+```
 
-AND
-
-In R
+### Install rehh package in R
+```{r}
 install.packages('rehh')
+```
+
+### Clone repository to ~/software dir
+```{bash}
+cd ~/software
+git clone https://github.com/juuzia/malaria-hub.git
 ```
 
 # Input data
@@ -87,7 +94,7 @@ install.packages('rehh')
 ## Part I
 ### Single population
 ```{bash}
-Rscript prepare_input_rehh_per_category.R \
+Rscript ~/software/malaria-hub/selection/prepare_input_rehh_per_category.R \
 -d <workdir> \
 -b <binary_matrix> \
 --remove_chr Pf3D7_API_v3,Pf_M76611 \
@@ -101,9 +108,10 @@ Rscript prepare_input_rehh_per_category.R \
 ```
 ### Multiple population can be run with xrags or parallel
 ```{bash}
-cat country_list.txt | xargs -I {} -P 2 sh -c 'Rscript prepare_input_rehh_per_category.R \
+cat country_list.txt | xargs -I {} -P 2 sh -c 'Rscript ~/software/malaria-hub/selection/prepare_input_rehh_per_category.R \
 -d <workdir> \
 -b <binary_matrix> \
+--remove_chr Pf3D7_API_v3,Pf_M76611 \
 -m <metadata> \
 --annotation <annotation> \
 -c {} \
@@ -115,14 +123,13 @@ cat country_list.txt | xargs -I {} -P 2 sh -c 'Rscript prepare_input_rehh_per_ca
 ```
 ## Part II
 ```{bash}
-Rscript calculate_rehh_metrics.R\
+Rscript ~/software/malaria-hub/selection/calculate_rehh_metrics.R\
 -d <workdir>\
 --prefix scanned_haplotypes \
 --remove_chr Pf3D7_API_v3,Pf_M76611 \
 --list_category region_list.txt \
 --annotation <annotation> \
 --gene_product <gene_product>
-
 ```
 
 # Output data
