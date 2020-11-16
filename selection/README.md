@@ -56,7 +56,7 @@ git clone https://github.com/juuzia/malaria-hub.git
 
 * binary matrix - matrix needs to be after standard filtering (__bi-allelic__ snps only). Selection analysis will be done only for nucleus chromosomes. Support matrix without apicoplast and mitochondrion chromosomes or use `--remove_chr` argument to exlude them in analysis (REQUIRED)
 
-* metadata - tab-separated file with description of every sample. Requires field with Fws scores, country, region or site category. Column names describing sample id (`--sample-id`), country and region `--label_category`, fws score (`--label_fws`) can be defined on arguments level.
+* metadata - tab-separated file with description of every sample. Requires field with Fws scores, country, region or site category. Column names describing sample id (`--label-id`), country and region `--label_category`, fws score (`--label_fws`) can be defined on arguments level.
 
 * annotation - tab-separated file with description of every snp. Required columns __Chr, Pos, Ref, Alt_1, Gene_name_1__. Gene naming need to be in accordance. Can be prepared with SnpEff/CSQ.
 
