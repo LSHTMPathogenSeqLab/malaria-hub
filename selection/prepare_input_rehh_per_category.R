@@ -8,7 +8,7 @@ library(optparse)
 library(tidyr)
 library(stringr)
 
-source("~/software/lshtm_scripts/selection/helpers.R")
+source("~/software/malaria-hub/selection/helpers.R")
 
 option_list = list(
   make_option(c("-d", "--workdir"), type = "character", default = '.',
