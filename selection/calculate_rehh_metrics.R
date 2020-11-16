@@ -172,11 +172,11 @@ for (category in categories) {
 
             # Candidate regions
             cr_rbs <- rehh::calc_candidate_regions(rbs,
-                                                  threshold = 5,
-                                                  pval = TRUE,
-                                                  window_size = 2E4,
-                                                  overlap = 1E4,
-                                                  min_n_extr_mrk = 2)
+                                                   threshold = 5,
+                                                   pval = TRUE,
+                                                   window_size = 2E4,
+                                                   overlap = 1E4,
+                                                   min_n_extr_mrk = 2)
             if (nrow(cr_rbs) > 1) {
               cr_rbs$category_name <- paste0(c(category, contr_category), collapse = "|")
               cr_rbs_all <- rbind(cr_rbs_all, cr_rbs)
@@ -204,11 +204,11 @@ for (category in categories) {
             }
 
             cr_xpehh <- rehh::calc_candidate_regions(xpehh,
-                                                    threshold = 5,
-                                                    pval = TRUE,
-                                                    window_size = 2E4,
-                                                    overlap = 1E4,
-                                                    min_n_extr_mrk = 2)
+                                                     threshold = 5,
+                                                     pval = TRUE,
+                                                     window_size = 2E4,
+                                                     overlap = 1E4,
+                                                     min_n_extr_mrk = 2)
             if (nrow(cr_xpehh) > 1) {
               cr_xpehh$category_name <- paste0(c(category, contr_category), collapse = "|")
               cr_xpehh_all <- rbind(cr_xpehh_all, cr_xpehh)
