@@ -50,9 +50,10 @@ modify_df_ggplot <- function(df, th=4) {
           LOGPVALUE = as.numeric(LOGPVALUE)) %>%
     filter(!is.na(LOGPVALUE)) %>%
     group_by(Gene_name_1) %>%
-    mutate(pc = sum(LOGPVALUE >= th)) %>%
+    mutate(pc = sum(LOGPVALUE >= th),
+           pcmax = max(LOGPVALUE, na.rm=TRUE)) %>%
     ungroup() %>%
-    mutate(is_annotate = ifelse(Gene_name_1 != "" & pc >= 2, "yes", "no"),
+    mutate(is_annotate = ifelse(Gene_name_1 != "" & pc >= 2 & LOGPVALUE == pcmax, "yes", "no"),
            is_highlight = ifelse(LOGPVALUE >= th, "yes", "no"))
           
   # Compute chromosome sizes
@@ -76,26 +77,38 @@ modify_df_ggplot <- function(df, th=4) {
   list("df_vis" = mod_df, "df_axis" = axis_df)
 }
 
-# Generate manhattan plot for iHS, rBS, XPEHH results
+# Generate manhattan plot for iHS, Rsb, XPEHH results
 generate_manhattan_ggplot <- function(df, axis, th, name, yname, hcolor = "orange") {
 
   p <- ggplot(data = df, aes(x = BPcum, y = LOGPVALUE)) +
       geom_point(aes(color = as.factor(CHR)), alpha = 1, size = 1.3) +
       scale_color_manual(values = rep(c("black", "grey"), 22)) +
       scale_x_continuous(label = axis$CHR, breaks = axis$center) +
+      scale_y_continuous(breaks = seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2),
+                         limits=c(first(seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2)),
+                                  last(seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2)))) +
       geom_point(data = subset(df, is_highlight == "yes"),
                  color = hcolor, size = 1.5) +
       geom_label_repel(data = (df %>% filter(is_annotate == "yes") %>%
                        group_by(Gene_name_1) %>% top_n(1, LOGPVALUE)),
-                       aes(label = Gene_name_1), size = 2) +
-      geom_hline(yintercept = th, color = "red", alpha = 0.8) +
+                       aes(label = Gene_name_1),
+                       size = 3,
+                       box.padding = 0.25,
+                       label.padding = 0.35,
+                       position = "identity") +
+      geom_hline(yintercept = th, color = "red", alpha = 1) +
       labs(title = name,
            x = "Chromosomes",
            y = yname) +
-      theme_bw() +
+      theme_classic() +
       theme(
           legend.position = "none",
           panel.border = element_blank(),
+          axis.text.x = element_text(size=12, color="black"),
+          axis.text.y = element_text(size=12, color = "black"),
+          axis.title.x = element_text(size=12, color = "black"),
+          axis.title.y = element_text(size=12, color = "black"),
+          plot.title = element_text(size=15, color="black", hjust = 0.5),
           panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank()
       )
