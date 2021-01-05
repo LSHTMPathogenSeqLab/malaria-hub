@@ -72,7 +72,7 @@ modify_df_ggplot <- function(df, th=4) {
 
   axis_df <- mod_df %>%
    group_by(CHR) %>%
-   summarize(center = (max(BPcum) + min(BPcum)) / 2)
+   summarize(center = (max(BPcum) + min(BPcum)) / 2, .groups = 'drop')
 
   list("df_vis" = mod_df, "df_axis" = axis_df)
 }
