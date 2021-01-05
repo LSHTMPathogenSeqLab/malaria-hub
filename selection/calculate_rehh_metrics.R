@@ -117,7 +117,7 @@ for (category in categories) {
 
       generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                                 th = 4,
-                                name = sprintf("iHS: %s", gsub("_"," ", category)),
+                                name = bquote(italic("iHS") ~ .(gsub("_", " " , category))),
                                 yname = ihs_expr,
                                 hcolor = "lightblue")
 
@@ -159,7 +159,7 @@ for (category in categories) {
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                                       th = 5,
-                                      name = paste0("Rsb: ", category, " vs ", contr_category),
+                                      name = bquote(italic("Rsb") ~ .(gsub("_", " " , category)) ~ "vs." ~ .(gsub("_", " ", contr_category))),
                                       yname = rsb_expr,
                                       hcolor = "red")
 
@@ -193,7 +193,7 @@ for (category in categories) {
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                             th = 5,
-                            name = paste0("XPEHH: ", category, " vs ", contr_category),
+                            name = bquote(italic("XP-EHH") ~ .(gsub("_", " " , category)) ~ "vs." ~ .(gsub("_", " ", contr_category))),
                             yname = xpehh_expr,
                             hcolor = "purple")
 
