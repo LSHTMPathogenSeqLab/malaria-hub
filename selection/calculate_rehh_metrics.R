@@ -22,6 +22,15 @@ option_list = list(
     make_option(c("--remove_chr"), type = "character", default = NULL,
               help = "Chromosomes to remove ex. Pf3D7_API_v3,Pf_M76611",
               metavar = "character"),
+    make_option(c("--ihs_th"), type = "numeric", default = 4,
+              help = "iHS p-value threshold",
+              metavar = "numeric"),
+    make_option(c("--rsb_th"), type = "numeric", default = 5,
+              help = "Rsb p-value threshold",
+              metavar = "numeric"),
+    make_option(c("--xpehh_th"), type = "numeric", default = 5,
+              help = "XP-EHH p-value threshold",
+              metavar = "numeric")
     make_option(c("--threads"), type = "integer", default = 4,
               help = "Specify threads [default %default]",
               metavar = "number")
@@ -30,7 +39,12 @@ option_list = list(
 opt_parser = OptionParser(option_list = option_list);
 opt = parse_args(opt_parser);
 
-# TODO as arg
+# thresholds for iHS, Rsb, XP-EHH - p-value
+ihs_th <- opt$ihs_th
+rsb_th <- opt$rsb_th
+xpehh_th <- opt$xpehh_th
+
+# Set threads for DT
 setDTthreads(opt$threads)
 
 # workdir
@@ -113,23 +127,23 @@ for (category in categories) {
 
     if (nrow(ihs$ihs) > 1) {
       ihsA <- ihs$ihs %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
-      gg_data <- gg_to_plot <- modify_df_ggplot(ihsA, th = 4)
+      gg_data <- gg_to_plot <- modify_df_ggplot(ihsA, th = ihs_th)
 
       generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
-                                th = 4,
+                                th = ihs_th,
                                 name = bquote(italic("iHS") ~ .(gsub("_", " " , category))),
                                 yname = ihs_expr,
                                 hcolor = "lightblue")
 
       # Annotation
-      high_ihs <- ihsA %>% filter(LOGPVALUE >= 4)
+      high_ihs <- ihsA %>% filter(LOGPVALUE >= ihs_th)
       if (nrow(high_ihs) > 1) {
         high_ihs$category_name <- category
         high_ihs_all <- rbind(high_ihs_all, high_ihs)
       }
       # Candidate regions
       cr_ihs <- rehh::calc_candidate_regions(ihs$ihs,
-                                             threshold = 5,
+                                             threshold = ihs_th,
                                              pval = TRUE,
                                              window_size = 2E4,
                                              overlap = 1E4,
@@ -155,16 +169,16 @@ for (category in categories) {
 
           if (nrow(rsb) > 1) {
             rsbA <- rsb %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
-            gg_data <- gg_to_plot <- modify_df_ggplot(rsbA, th = 5)
+            gg_data <- gg_to_plot <- modify_df_ggplot(rsbA, th = rsb_th)
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
-                                      th = 5,
+                                      th = rsb_th,
                                       name = bquote(italic("Rsb") ~ .(gsub("_", " " , category)) ~ "vs." ~ .(gsub("_", " ", contr_category))),
                                       yname = rsb_expr,
                                       hcolor = "red")
 
             # High significance
-            high_rsb <- rsbA %>% filter(LOGPVALUE >= 5)
+            high_rsb <- rsbA %>% filter(LOGPVALUE >= rsb_th)
             if (nrow(high_rsb) > 1) {
               high_rsb$category_name <- paste0(c(category, contr_category), collapse = "|")
               high_rsb_all <- rbind(high_rsb_all, high_rsb)
@@ -172,7 +186,7 @@ for (category in categories) {
 
             # Candidate regions
             cr_rsb <- rehh::calc_candidate_regions(rsb,
-                                                   threshold = 5,
+                                                   threshold = rsb_th,
                                                    pval = TRUE,
                                                    window_size = 2E4,
                                                    overlap = 1E4,
@@ -189,22 +203,22 @@ for (category in categories) {
 
           if (nrow(xpehh) > 1) {
             xpehhA <- xpehh %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
-            gg_data <- gg_to_plot <- modify_df_ggplot(xpehhA, th = 5)
+            gg_data <- gg_to_plot <- modify_df_ggplot(xpehhA, th = xpehh_th)
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
-                            th = 5,
+                            th = xpehh_th,
                             name = bquote(italic("XP-EHH") ~ .(gsub("_", " " , category)) ~ "vs." ~ .(gsub("_", " ", contr_category))),
                             yname = xpehh_expr,
                             hcolor = "purple")
 
-            high_xpehh <- xpehhA %>% filter(LOGPVALUE >= 5)
+            high_xpehh <- xpehhA %>% filter(LOGPVALUE >= xpehh_th)
             if (nrow(high_xpehh) > 1) {
               high_xpehh$category_name <- paste0(c(category, contr_category), collapse = "|")
               high_xpehh_all <- rbind(high_xpehh_all, high_xpehh)
             }
 
             cr_xpehh <- rehh::calc_candidate_regions(xpehh,
-                                                     threshold = 5,
+                                                     threshold = xpehh_th ,
                                                      pval = TRUE,
                                                      window_size = 2E4,
                                                      overlap = 1E4,
