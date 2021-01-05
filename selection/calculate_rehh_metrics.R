@@ -51,7 +51,7 @@ pattern <- "(.*?)_(.+)_(.*)"
 
 # Y axis labels
 ihs_expr <- expression("-" * log[10] * "[1" ~ "-" ~ "2" ~ "|" ~ Phi[scriptstyle(italic(iHS))] ~ "-" ~ 0.5 * "|]")
-rbs_expr <- expression(-log[10] ~ "(" * italic(p) * "-value)")
+rsb_expr <- expression(-log[10] ~ "(" * italic(p) * "-value)")
 xpehh_expr <- expression(-log[10] ~ "(" * italic(p) * "-value)")
 
 # Load categories file
@@ -88,13 +88,13 @@ gff_table$chr <- as.numeric(stringr::str_match(gff_table$chr, pattern)[, 3])
 high_ihs_all <- c()
 cr_ihs_all <- c()
 
-high_rbs_all <- c()
-cr_rbs_all <- c()
+high_rsb_all <- c()
+cr_rsb_all <- c()
 
 high_xpehh_all <- c()
 cr_xpehh_all <- c()
 
-# Read IHH, IES, INES metrics and calculate iHS, rBS, XPEHH metric
+# Read IHH, IES, INES metrics and calculate iHS, Rsb, XPEHH metric
 # * Plot manhattan plot
 # * Filter sites with high significance
 # * Detect candidate regions
@@ -149,37 +149,37 @@ for (category in categories) {
         fileoc <- file.path(workdir, paste0(prefix, "_", contr_category, ".tsv"))
         if (file.exists(fileoc)) {
           ihh_oc <- fread(fileoc, sep = "\t", header = TRUE, data.table = FALSE)
-          #### RBS ####
-          cat("\n## rBS ##\n")
-          rbs <- rehh::ines2rsb(ihh, ihh_oc)
+          #### Rsb ####
+          cat("\n## Rsb ##\n")
+          rsb <- rehh::ines2rsb(ihh, ihh_oc)
 
-          if (nrow(rbs) > 1) {
-            rbsA <- rbs %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
-            gg_data <- gg_to_plot <- modify_df_ggplot(rbsA, th = 5)
+          if (nrow(rsb) > 1) {
+            rsbA <- rsb %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+            gg_data <- gg_to_plot <- modify_df_ggplot(rsbA, th = 5)
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                                       th = 5,
-                                      name = paste0("rBS: ", category, " vs ", contr_category),
-                                      yname = rbs_expr,
+                                      name = paste0("Rsb: ", category, " vs ", contr_category),
+                                      yname = rsb_expr,
                                       hcolor = "red")
 
             # High significance
-            high_rbs <- rbsA %>% filter(LOGPVALUE >= 5)
-            if (nrow(high_rbs) > 1) {
-              high_rbs$category_name <- paste0(c(category, contr_category), collapse = "|")
-              high_rbs_all <- rbind(high_rbs_all, high_rbs)
+            high_rsb <- rsbA %>% filter(LOGPVALUE >= 5)
+            if (nrow(high_rsb) > 1) {
+              high_rsb$category_name <- paste0(c(category, contr_category), collapse = "|")
+              high_rsb_all <- rbind(high_rsb_all, high_rsb)
             }
 
             # Candidate regions
-            cr_rbs <- rehh::calc_candidate_regions(rbs,
+            cr_rsb <- rehh::calc_candidate_regions(rsb,
                                                    threshold = 5,
                                                    pval = TRUE,
                                                    window_size = 2E4,
                                                    overlap = 1E4,
                                                    min_n_extr_mrk = 2)
-            if (nrow(cr_rbs) > 1) {
-              cr_rbs$category_name <- paste0(c(category, contr_category), collapse = "|")
-              cr_rbs_all <- rbind(cr_rbs_all, cr_rbs)
+            if (nrow(cr_rsb) > 1) {
+              cr_rsb$category_name <- paste0(c(category, contr_category), collapse = "|")
+              cr_rsb_all <- rbind(cr_rsb_all, cr_rsb)
             }
           }
 
@@ -217,14 +217,14 @@ for (category in categories) {
         }
       }
     } else {
-      message('Only iHS results calculated. Not enough populations for rBS, XPEHH.')
+      message('Only iHS results calculated. Not enough populations for Rsb, XPEHH.')
     }
   }
   sink()
   dev.off()
 }
 
-# Save iHs, rBS, XP-EHH results for all categories
+# Save iHs, Rsb, XP-EHH results for all categories
 # iHS
 if (length(high_ihs_all) != 0) {
   write.table(high_ihs_all, file.path(workdir, "high_ihs_all_categories.tsv"),
@@ -237,14 +237,14 @@ if (length(cr_ihs_all) != 0) {
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
 
-# rBS
-if (length(high_rbs_all) != 0) {
-  write.table(high_rbs_all, file.path(workdir, "high_rbs_all_categories.tsv"),
+# Rsb
+if (length(high_rsb_all) != 0) {
+  write.table(high_rsb_all, file.path(workdir, "high_rsb_all_categories.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
-if (length(cr_rbs_all) != 0) {
-  cr_rbs_ann <- annotate_candidate_regions(cr_rbs_all, gff_table)
-  write.table(cr_rbs_ann, file.path(workdir, "cr_rbs_all_categories_annot.tsv"),
+if (length(cr_rsb_all) != 0) {
+  cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table)
+  write.table(cr_rsb_ann, file.path(workdir, "cr_rsb_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
 
