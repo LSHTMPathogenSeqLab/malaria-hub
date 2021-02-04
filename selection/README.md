@@ -49,7 +49,7 @@ install.packages('rehh')
 ### Clone repository to ~/software dir
 ```{bash}
 cd ~/software
-git clone https://github.com/juuzia/malaria-hub.git
+git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 ```
 
 # Input data
@@ -84,8 +84,8 @@ git clone https://github.com/juuzia/malaria-hub.git
 * `-d --workdir` - working directory to save results
 * `-p --prefix` - prefix name with scan_hh objects (default scanned_haplotypes)
 * `--list_category` - file with category names per line
-* `-a --annotation` - absolute location of annotation file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields.
-* `-a --gene_product` - absolute location of gene product file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields. !!! Used to annotate candidate regions.
+* `--annotation` - absolute location of annotation file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields.
+* `--gene_product` - absolute location of gene product file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields. !!! Used to annotate candidate regions.
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
 * `--threads` - optional argument to specife threads usage
 
