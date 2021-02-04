@@ -22,6 +22,12 @@ option_list = list(
     make_option(c("--remove_chr"), type = "character", default = NULL,
               help = "Chromosomes to remove ex. Pf3D7_API_v3,Pf_M76611",
               metavar = "character"),
+    make_option("--regex_chr", type = "character", default = "(.*?)_(.+)_(.*)",
+                help = "Regex pattern for chromosome detection. Default matches Pf3D7_01_v3",
+                metavar = "character"),
+    make_option("--regex_groupid", type = "numeric", default = 3,
+                help = "Regex pattern group",
+                metavar = "numeric"),
     make_option(c("--ihs_th"), type = "integer", default = 4,
               help = "iHS p-value threshold",
               metavar = "number"),
@@ -59,9 +65,10 @@ annotation_file <- opt$annotation
 gene_product_file <- opt$gene_product
 # Chromosomes to remove
 rm_chr <- opt$remove_chr
-
 # Pattern for chromosome detection
-pattern <- "(.*?)_(.+)_(.*)"
+pattern <- opt$regex_chr
+# Pattern group
+groupid <- opt$regex_groupid
 
 # Y axis labels
 ihs_expr <- expression("-" * log[10] * "[1" ~ "-" ~ "2" ~ "|" ~ Phi[scriptstyle(italic(iHS))] ~ "-" ~ 0.5 * "|]")
@@ -95,8 +102,8 @@ if (!is.null(rm_chr)) {
 }
 
 # Transform chromosome names to numeric
-annotation$Chr <- as.numeric(stringr::str_match(annotation$Chr, pattern)[, 3])
-gff_table$chr <- as.numeric(stringr::str_match(gff_table$chr, pattern)[, 3])
+annotation$Chr <- as.numeric(stringr::str_match(annotation$Chr, pattern)[, groupid])
+gff_table$chr <- as.numeric(stringr::str_match(gff_table$chr, pattern)[, groupid])
 
 
 high_ihs_all <- c()
