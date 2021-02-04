@@ -87,7 +87,7 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `-p --prefix` - prefix name with scan_hh objects (default scanned_haplotypes)
 * `--list_category` - file with category names per line
 * `--annotation` - absolute location of annotation file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields.
-* `--gene_product` - absolute location of gene product file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields. !!! Used to annotate candidate regions.
+* `--gene_product` - absolute location of gene product file. Requires to have chr, pos_start, pos_end, gene_id, product, gene_name fields. Used to annotate candidate regions.
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
 * `--regex_chr` - regex pattern to detect chromosome numbering
 * `--regex_groupid` - group id for regex with numbering
