@@ -180,7 +180,7 @@ for (category in categories) {
             # High significance
             high_rsb <- rsbA %>% filter(LOGPVALUE >= rsb_th)
             if (nrow(high_rsb) > 1) {
-              high_rsb$category_name <- paste0(c(category, contr_category), collapse = "|")
+              high_rsb$category_name <- paste0(sort(c(category, contr_category)), collapse = "|")
               high_rsb_all <- rbind(high_rsb_all, high_rsb)
             }
 
@@ -192,7 +192,7 @@ for (category in categories) {
                                                    overlap = 1E4,
                                                    min_n_extr_mrk = 2)
             if (nrow(cr_rsb) > 1) {
-              cr_rsb$category_name <- paste0(c(category, contr_category), collapse = "|")
+              cr_rsb$category_name <- paste0(sort(c(category, contr_category)), collapse = "|")
               cr_rsb_all <- rbind(cr_rsb_all, cr_rsb)
             }
           }
@@ -213,7 +213,7 @@ for (category in categories) {
 
             high_xpehh <- xpehhA %>% filter(LOGPVALUE >= xpehh_th)
             if (nrow(high_xpehh) > 1) {
-              high_xpehh$category_name <- paste0(c(category, contr_category), collapse = "|")
+              high_xpehh$category_name <- paste0(sort(c(category, contr_category)), collapse = "|")
               high_xpehh_all <- rbind(high_xpehh_all, high_xpehh)
             }
 
@@ -224,7 +224,7 @@ for (category in categories) {
                                                      overlap = 1E4,
                                                      min_n_extr_mrk = 2)
             if (nrow(cr_xpehh) > 1) {
-              cr_xpehh$category_name <- paste0(c(category, contr_category), collapse = "|")
+              cr_xpehh$category_name <- paste0(sort(c(category, contr_category)), collapse = "|")
               cr_xpehh_all <- rbind(cr_xpehh_all, cr_xpehh)
             }
           }
@@ -241,12 +241,14 @@ for (category in categories) {
 # Save iHs, Rsb, XP-EHH results for all categories
 # iHS
 if (length(high_ihs_all) != 0) {
-  write.table(high_ihs_all, file.path(workdir, "high_ihs_all_categories.tsv"),
+   write.table(high_ihs_all, file.path(workdir, "high_ihs_all_categories.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
  
 if (length(cr_ihs_all) != 0) {
-  cr_ihs_ann <- annotate_candidate_regions(cr_ihs_all, gff_table)
+  cr_ihs_all <- cr_ihs_all %>%
+    rename("chr" = "CHR", "start" = "START", "end" = "END")
+  cr_ihs_ann <- annotate_candidate_regions(cr_ihs_all, gff_table) %>% distinct()
   write.table(cr_ihs_ann, file.path(workdir, "cr_ihs_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -257,7 +259,9 @@ if (length(high_rsb_all) != 0) {
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
 if (length(cr_rsb_all) != 0) {
-  cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table)
+  cr_rsb_all <- cr_rsb_all %>%
+    rename("chr" = "CHR", "start" = "START", "end" = "END")
+  cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table) %>% distinct()
   write.table(cr_rsb_ann, file.path(workdir, "cr_rsb_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -269,6 +273,8 @@ if (length(high_xpehh_all) != 0) {
 }
 
 if (length(cr_xpehh_all) != 0) {
+  cr_xpehh_all <- cr_xpehh_all %>%
+    rename("chr" = "CHR", "start" = "START", "end" = "END") %>% distinct()
   cr_xpehh_ann <- annotate_candidate_regions(cr_xpehh_all, gff_table)
   write.table(cr_xpehh_ann, file.path(workdir, "cr_xpehh_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
