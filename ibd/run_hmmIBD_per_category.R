@@ -11,7 +11,7 @@ option_list = list(
   make_option(c("-d", "--workdir"), type = "character", default = NULL,
               help = "Specify main directory",
               metavar = "character"),
-  make_option(c("-b", "--matrix_binary"), type = "character", default = NULL,
+  make_option(c("-b", "--binary_matrix"), type = "character", default = NULL,
               help = "Input filename of filtered binary matrix",
               metavar = "character"),
   make_option(c("-m", "--metadata"), type = "character", default = NULL,
@@ -58,7 +58,7 @@ opt = parse_args(opt_parser);
 # Working directory
 workdir <- opt$workdir
 # Binary matrix file name
-bin_mat_file <- opt$matrix_binary
+bin_mat_file <- opt$binary_matrix
 # Metadata file name
 met_file <- opt$metadata
 # Category
