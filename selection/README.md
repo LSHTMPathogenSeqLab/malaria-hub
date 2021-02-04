@@ -60,7 +60,7 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 
 * annotation - tab-separated file with description of every snp. Required columns __Chr, Pos, Ref, Alt_1, Gene_name_1__. Gene naming need to be in accordance. Can be prepared with SnpEff/CSQ.
 
-* gene/product file - tab-separated file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB.
+* gene/product file - tab-separated file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB. Go to _Genes_ > _Annotation,curation and identifiers_ > _Updated annotation at GeneDB_ -> Species filter >  Apply > Download table.
 
 # Arguments
 
@@ -77,6 +77,8 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `--label_id` - column name in metadata with sample id
 * `--maf` - threshold for MAF (default 0.01)
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
+* `--regex_chr` - regex pattern to detect chromosome numbering
+* `--regex_groupid` - group id for regex with numbering
 * `--threads` - optional argument to specife threads usage
 
 ## calculate_rehh_metrics.R ##
@@ -87,6 +89,11 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `--annotation` - absolute location of annotation file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields.
 * `--gene_product` - absolute location of gene product file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields. !!! Used to annotate candidate regions.
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
+* `--regex_chr` - regex pattern to detect chromosome numbering
+* `--regex_groupid` - group id for regex with numbering
+* `--ihs_th` - log p-value thresholds for iHS
+* `--rsb_th` - log p-value thresholds for Rsb
+* `--xpehh_th` - log p-value thresholds for XP-EHH metric
 * `--threads` - optional argument to specife threads usage
 
 # Run scripts
