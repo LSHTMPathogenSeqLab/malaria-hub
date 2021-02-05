@@ -1,8 +1,10 @@
 # Analysis in few words
 
-IBD analysis is performed in two-step manner: prepare input files and run hmmIBD then parse and annotate results. Scripts for populations are designed to be run in command line by specifying arguments. If calling script from R level is prefered, replace variables defined in top-level and omit optparse chunk.
+IBD analysis is performed in two-step manner: input files preparation and running [hmmIBD](https://malariajournal.biomedcentral.com/articles/10.1186/s12936-018-2349-7) then parsing and annotating results. Scripts for populations are designed to be run in command line by specifying arguments. If calling script from R level is prefered, replace variables defined in top-level and omit optparse chunk.
 
-Firstly, input data is parsed, filtered and recoded to match requirements of hmmIBD. Then hmmIBD is run producing two output files `_out.hmm.txt` and `_out.hmm_fract.txt`. Output of hmmIBD is stored in `hmmIBD_run_<pop_name>.log`. Process only populations that have sufficient sample size. Script processes one population at a time. Preparing data can be done on few resolution levels region/country/site/ancestry. Population is subsetted based on metadata description.
+Firstly, input data is parsed, filtered and recoded to match requirements.
+Script processes one population at a time (take only populations that have sufficient sample size). Preparing data can be done on few resolution levels region/country/site/ancestry. Population is subsetted based on metadata description.
+Following, hmmIBD should produce two files `_out.hmm.txt` and `_out.hmm_fract.txt`. Description of output files can be studied (here)[https://github.com/glipsnort/hmmIBD]. Log from hmmIBD run is stored in `hmmIBD_run_<pop_name>.log`.  
 
 Filtering steps:
 * select snps with MAF > th (default 0.01)
@@ -10,17 +12,14 @@ Filtering steps:
 * recode data to 0 (REF), 1 (ALT), -1 (MISSING)
 * !! IMPORTANT !! all missing calls are replaced to reference and all mixed calls to alternative
 
-Secondly, files produced by hmmIBD are combined across selected categories and annotated. In order to calculate fraction across genome (per population) sliding window analysis was used (`--window_size`). Example plots and visualization can be explored in `visualize_hmmIBD_results.R`.
-
-Filtering steps:
-* window size
+Secondly, files produced by hmmIBD are combined across selected categories and annotated. In order to calculate cumulative fraction across genome (per population) sliding window analysis was used. Specigy window size with `--window_size` argument. Example plots and visualization can be explored in `vis_hmmIBD_results.R`.
 
 # Env preparation
 
 ### Create conda env
 ```{bash}
-conda create -n ibd r-base r-dplyr r-data.table r-optparse r-stringr r-ggplot2 r-ggrepel r-tidyr --channel conda-forge
-conda activate selection
+conda create --name ibd r-base r-dplyr r-data.table r-optparse r-stringr r-ggplot2 r-ggrepel r-tidyr r-readr --channel conda-forge
+conda activate ibd
 ```
 
 ### Install hmmIBD in ~/software dir
@@ -70,7 +69,7 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 
 * `-d --workdir` - working directory to save results
 * `--list_category` - file with category names per line
-* `-l --legend` - __pf_matrix_02_hap_leg.tsv__ legend file
+* `-l --legend` - __ibd_matrix_hap_leg.tsv__ legend file (produced with previous script)
 * `-r --ref_index` - Reference index (.fai)
 * `--window_size` - Window size for genome wide fraction calculations (default 10000)
 * `--quantile_cutoff` - 
@@ -121,7 +120,7 @@ cat country_list.txt | xargs -I {} -P 2 sh -c 'Rscript ~/software/malaria-hub/ib
 Rscript ~/software/malaria-hub/ibd/parse_annotate_hmmIBD_results.R\
 -d <workdir>\
 --list_category country_list.txt \
---legend pf_matrix_02_hap_leg.tsv \
+--legend ibd_matrix_hap_leg.tsv \
 --gene_product <gene_product>
 --ref_index Pfalciparum.genome.fasta.fai \
 --maf 0.01 \
@@ -130,17 +129,14 @@ Rscript ~/software/malaria-hub/ibd/parse_annotate_hmmIBD_results.R\
 --remove_chr Pf3D7_API_v3,Pf_M76611
 ```
 
-## Visualization
-Example visualization script in `visualize_ibd_results.txt`
-
 # Output data
 
 ## run_hmmIBD_per_category.R ##
 
 _Results per category_
 
-* `pf_matrix_02_hap_leg.tsv` - matrix legend (same for each iteration)
-* `pf_matrix_02_hap_<category>.tsv` - recoded matrix per category
+* `ibd_matrix_hap_leg.tsv` - matrix legend (same for each iteration)
+* `ibd_matrix_hap_<category>.tsv` - recoded matrix per category
 * `hmmIBD_<category>_02_maf<th_maf>.txt` - input file for hmmIBD (after filtering)
 * `hmmIBD_run_<category>.log` - logfile to observe output from hmmIBD
 * `hmmIBD_<category>_02_maf<th_maf>_out.hmm.txt` - 
@@ -151,3 +147,8 @@ _Results per category_
 * `<suffix>_hmmIBD_fraction_results_combined.tsv` - table with pairwise fraction collected for all specified categories
 * `<suffix>_hmmIBD_ibd_results_combined.tsv` - table with re-calculated genome-wide IBD fractions collected for all specified categories
 * `<suffix>_hmmIBD_ibd_annotated_q0.95.tsv` - table with annotated candidate regions collected for all specified categories
+
+## Visualization
+Example visualization script in `vis_hmmIBD_results.R`
+
+![Example plots](https://github.com/LSHTMPathogenSeqLab/malaria-hub/blob/hmmibd/ibd/example_plots.png?raw=true)
