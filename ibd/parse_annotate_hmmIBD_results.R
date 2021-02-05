@@ -16,7 +16,7 @@ option_list = list(
               help = "Specify category list",
               metavar = "character"),
   make_option(c("-l", "--legend"), type = "character",
-              default = "pf_matrix_02_hap_leg.tsv",
+              default = "ibd_matrix_hap_leg.tsv",
               help = "Specify SNPs legend",
               metavar = "character"),
   make_option(c("-a", "--annotation"), type = "character", default = NULL,
@@ -127,9 +127,9 @@ combined_fraction_r <- c()
 for (category_n in category_list) {
     message(category_n)
     # Define data for category
-    fraction <- file.path(workdir, sprintf("hmmIBD_%s_02_maf%s_out.hmm_fract.txt", category_n, as.character(th_maf)))
+    fraction <- file.path(workdir, sprintf("hmmIBD_%s_maf%s_out.hmm_fract.txt", category_n, as.character(th_maf)))
     message(fraction)
-    hmm_ibd <- file.path(workdir, sprintf("hmmIBD_%s_02_maf%s_out.hmm.txt", category_n, as.character(th_maf)))
+    hmm_ibd <- file.path(workdir, sprintf("hmmIBD_%s_maf%s_out.hmm.txt", category_n, as.character(th_maf)))
     message(hmm_ibd)
 
     # Read data
