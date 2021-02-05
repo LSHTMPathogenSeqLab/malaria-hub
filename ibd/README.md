@@ -137,10 +137,10 @@ _Results per category_
 
 * `ibd_matrix_hap_leg.tsv` - matrix legend (same for each iteration)
 * `ibd_matrix_hap_<category>.tsv` - recoded matrix per category
-* `hmmIBD_<category>_02_maf<th_maf>.txt` - input file for hmmIBD (after filtering)
+* `hmmIBD_<category>_maf<th_maf>.txt` - input file for hmmIBD (after filtering)
 * `hmmIBD_run_<category>.log` - logfile to observe output from hmmIBD
-* `hmmIBD_<category>_02_maf<th_maf>_out.hmm.txt` - 
-* `hmmIBD_<category>_02_maf<th_maf>_out.hmm.fract.txt` - 
+* `hmmIBD_<category>_maf<th_maf>_out.hmm.txt` - 
+* `hmmIBD_<category>_maf<th_maf>_out.hmm.fract.txt` - 
 
 ## parse_annotate_hmmIBD_results.R ##
 
