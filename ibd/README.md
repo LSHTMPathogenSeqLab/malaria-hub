@@ -4,7 +4,7 @@ IBD analysis is performed in two-step manner: input files preparation and runnin
 
 Firstly, input data is parsed, filtered and recoded to match requirements.
 Script processes one population at a time (take only populations that have sufficient sample size). Preparing data can be done on few resolution levels region/country/site/ancestry. Population is subsetted based on metadata description.
-Following, hmmIBD should produce two files `_out.hmm.txt` and `_out.hmm_fract.txt`. Description of output files can be studied (here)[https://github.com/glipsnort/hmmIBD]. Log from hmmIBD run is stored in `hmmIBD_run_<pop_name>.log`.  
+Following, hmmIBD should produce two files `_out.hmm.txt` and `_out.hmm_fract.txt`. Description of output files can be studied [here](https://github.com/glipsnort/hmmIBD). Log from hmmIBD run is stored in `hmmIBD_run_<pop_name>.log`.  
 
 Filtering steps:
 * select snps with MAF > th (default 0.01)
