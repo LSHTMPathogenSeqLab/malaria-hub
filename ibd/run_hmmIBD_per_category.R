@@ -132,7 +132,7 @@ if (!is.null(rm_chr)) {
 }
 
 # Transform chromosome from string to numeric
-snp$chr <- as.numeric(stringr::str_match(snp$chr, pattern)[, 3])
+snp$chr <- as.numeric(stringr::str_match(snp$chr, pattern)[, groupid])
 
 # Check if all samples match between binary matrix and metadata file
 metadata <- metadata %>% filter(!!sym(label_id) %in% colnames(snp[, -c(1:3)]))
