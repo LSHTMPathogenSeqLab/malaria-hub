@@ -147,7 +147,7 @@ for (category_n in category_list) {
         results <- c()
         total <- unique(ibd_conf$total)
 
-        for(k in seq_along(chr_vec)) {
+        for (k in seq_along(chr_vec)) {
             message(k)
             data_chr <- ibd_conf %>% filter(chr == chr_vec[k])
             length_chr <- fai %>% filter(chr == chr_vec[k]) %>% select(end_chr) %>% pull()
@@ -155,8 +155,8 @@ for (category_n in category_list) {
             start_window <- 1
             end_window <- window_size
 
-            for(m in seq(ceiling(iterations))) {
-              #TODO this to function (?)
+            for (m in seq(ceiling(iterations))) {
+                #TODO this to function (?)
                 x = data.table(start = as.numeric(as.character(data_chr$start)),
                               end = as.numeric(as.character(data_chr$end)))
                 y = data.table(start = as.numeric(as.character(start_window)),

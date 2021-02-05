@@ -5,7 +5,7 @@ require(data.table)
 require(dplyr)
 require(crayon)
 
-source('~/software/malaria-hub/utils/helpers.R')
+source("~/software/malaria-hub/utils/helpers.R")
 
 option_list = list(
   make_option(c("-d", "--workdir"), type = "character", default = NULL,
