@@ -6,12 +6,10 @@ workdir <- "~/hmmIBD_tests"
 metadata_file <- "pf_metadata_collapsed_w_region_np_June_2020.tsv"
 country_label <- "country"
 region_label <- "region"
-suffix <- "02_02_2021"
+suffix <- "04_02_2021"
 ref_index <- "~/hmmIBD_tests/Pfalciparum.genome.fasta.fai"
 rm_chr <- c("Pf_M76611", "Pf3D7_API_v3")
-category_order <- c("Central_Africa", "East_Africa", "West_Africa",
-                     "Horn_of_Africa", "South_Central_Africa", "Southern_Africa",
-                     "Southeast_Asia", "Oceania", "South_America")
+category_order <- c("South_America", "South_Central_Africa")
 
 pattern <- "(.*?)_(.+)_(.*)"
 groupid <- 3
@@ -59,12 +57,12 @@ combined_ibd_r <- combined_ibd_r %>% left_join(metadata, by = c("category" = "co
 fraction_ibd_r <- fraction_ibd_r %>% left_join(metadata, by = c("category" = "country"))
 
 # Boxplot fractions
-ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(region_label))) +
+g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(region_label))) +
   geom_boxplot(outlier.alpha = 0.2) +
   stat_summary(fun = mean, geom = "point", shape = 9,
                size = 1, color = "yellow") +
   theme_classic() +
-  guides(fill = guide_legend(title = country_label, nrow = 2)) +
+  guides(fill = guide_legend(title = country_label, nrow = 1)) +
   theme(axis.line.x = element_line(color = "black"),
           axis.line.y = element_line(color = "black"),
           axis.text.x = element_text(size = 12, color = "black",
@@ -77,35 +75,31 @@ ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(regio
           strip.text.y = element_text(angle = 0, face = "bold", size = 9),
           strip.background = element_blank(),
           legend.position = "bottom") +
-  labs(x = "Country", y = "Pairwise fraction IBD")
-#dev.off()
+  labs(x = "Country", y = "Pairwise fraction IBD", fill = "Region:")
 
-# Tranform to genetic distribution
+# Transform to genetic distribution
 ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
     mutate(trans = get_chrom_transposition(transpose_chr, chr)) %>%
     mutate(pos_bp_ed = as.numeric(as.numeric(start) + trans),
             Fraction = as.numeric(fraction)) %>%
-    ungroup() %>%
-    as.data.frame()
-
-ibd_frac_tr$region <- sapply(combined_ibd_r$Country, function(x) {return_region(x)})
+    ungroup()
 
 # Establish order in plot
 # Arrange according to order
-ibd_frac_tr <- ibd_frac_tr %>% mutate(region = factor(region, levels = order)) %>% arrange(region)
-ibd_frac_tr <- ibd_frac_tr %>% mutate(Country = factor(category, levels = unique(category))) %>% as.data.frame()
+ibd_frac_tr <- ibd_frac_tr %>% mutate(region = factor(region, levels = category_order)) %>% arrange(region)
+ibd_frac_tr <- ibd_frac_tr %>% mutate(country = factor(category, levels = unique(category)))
 
 # IBD pairwise fraction in 10kb windows
 p <- ggplot(data = ibd_frac_tr) +
-    geom_line(aes(x = pos_bp_ed, y = fraction, color = category)) +
-    scale_y_continuous(limits = c(0, 1), breaks = c(0,1), labels = c("0.0", "1.0")) +
+    geom_line(aes(x = pos_bp_ed, y = fraction, color = region)) +
+    scale_y_continuous(limits = c(0, 1), breaks = c(0, 1), labels = c("0.0", "1.0")) +
     facet_grid(category ~ ., space = "free_x") +
-    labs(x = "Chromsome", y = "IBD Fraction") +
-    guides(color = guide_legend(title = "Regions", nrow = 2, byrow = FALSE)) +
+    labs(x = "Chromsome", y = "IBD Fraction", color = "Region:") +
+    guides(color = guide_legend(title = "Regions", nrow = 1, byrow = FALSE)) +
     theme_classic() +
     theme(axis.line.x = element_line(color = "black"),
           axis.line.y = element_line(color = "black"),
-          axis.text.x = element_text(size = 12, color="black", angle = 0, vjust = -0.5),
+          axis.text.x = element_text(size = 12, color = "black", angle = 0, vjust = -0.5),
           axis.text.y = element_text(size = 12, color = "black"),
           axis.title.x = element_text(size = 12, color = "black"),
           axis.title.y = element_text(size = 12, color = "black"),
@@ -118,7 +112,3 @@ p <- ggplot(data = ibd_frac_tr) +
                alpha = 0.5, linetype = "longdash", size = 0.2) +
     scale_x_continuous(breaks = unique(ibd_frac_tr$trans),
                        labels = unique(ibd_frac_tr$chr))
-
-pdf(file.path(workdir, sprintf("%s_hmmIBD_fraction_across_genome.pdf", suffix))
-print(p)
-dev.off()
