@@ -162,12 +162,12 @@ rm(snp, snp_hmmibd)
 # Subset reformatted matrices
 snp_hmmibd_02_1 <- snp_hmmibd_1
 write.table(snp_hmmibd_02_1,
-    file.path(workdir, "pf_matrix_02_hap_leg.tsv"),
+    file.path(workdir, "ibd_matrix_hap_leg.tsv"),
     quote = FALSE, col.names = TRUE, row.names = FALSE, sep = "\t")
 
 snp_hmmibd_02_2 <- snp_hmmibd_2
 write.table(snp_hmmibd_02_2,
-    file.path(workdir, sprintf("pf_matrix_02_hap_%s.tsv", category_str)),
+    file.path(workdir, sprintf("ibd_matrix_hap_%s.tsv", category_str)),
     quote = FALSE, col.names = TRUE, row.names = FALSE, sep = "\t")
 
 # Run hmmIBD for population
@@ -195,14 +195,14 @@ snp_hmmibd_merged <- cbind(snp_hmmibd_leg, snp_hmmibd_02_2)
 
 # Write country matrix to file
 write.table(format(snp_hmmibd_merged, digits = 0),
-    file.path(workdir, sprintf("hmmIBD_%s_02_maf%s.txt", category_str, as.character(th_maf))),
+    file.path(workdir, sprintf("hmmIBD_%s_maf%s.txt", category_str, as.character(th_maf))),
     sep = "\t", quote = FALSE, row.names = FALSE)
   
 # Run hmmIBD
 string_i <- file.path(workdir,
-    sprintf("hmmIBD_%s_02_maf%s.txt", category_str, as.character(th_maf)))
+    sprintf("hmmIBD_%s_maf%s.txt", category_str, as.character(th_maf)))
 string_o <- file.path(workdir,
-    sprintf("hmmIBD_%s_02_maf%s_out", category_str, as.character(th_maf)))
+    sprintf("hmmIBD_%s_maf%s_out", category_str, as.character(th_maf)))
 output <- system(command = sprintf("~/software/hmmIBD/hmmIBD -i %s -o %s", string_i, string_o), intern = TRUE)
 write.table(output, file.path(workdir,
     sprintf("hmmIBD_run_%s.log", category_str)), quote = FALSE, col.names = FALSE, row.names = FALSE)
