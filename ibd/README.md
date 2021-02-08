@@ -80,6 +80,7 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
 * `--regex_chr` - regex pattern to detect chromosome numbering
 * `--regex_groupid` - group id for regex with numbering
+* `--no_minimize_effect` - Add if you want to re-calculate fraction without minimizing size effect. (default FALSE). If included output files have nme at the end suffix.
 
 # Run scripts
 
@@ -147,7 +148,7 @@ _Results per category_
 
 * `<suffix>_hmmIBD_fraction_results_combined.tsv` - table with pairwise fraction collected for all specified categories
 * `<suffix>_hmmIBD_ibd_results_combined.tsv` - table with re-calculated genome-wide IBD fractions collected for all specified categories
-* `<suffix>_hmmIBD_ibd_annotated_q0.95.tsv` - table with annotated candidate regions collected for all specified categories
+* `<suffix>_hmmIBD_ibd_annotated_results_combined_q0.95.tsv` - table with annotated candidate regions collected for all specified categories
 
 ## Visualization
 Example visualization script in `vis_hmmIBD_results.R`
