@@ -19,8 +19,8 @@ option_list = list(
               default = "ibd_matrix_hap_leg.tsv",
               help = "Specify SNPs legend",
               metavar = "character"),
-  make_option(c("-a", "--annotation"), type = "character", default = NULL,
-              help = "Annotation file",
+  make_option("--gene_product", type = "character", default = NULL,
+              help = "Gene product file",
               metavar = "character"),
   make_option(c("-r", "--ref_index"), type = "character", default = NULL,
               help = "File name for reference index",
@@ -60,7 +60,7 @@ category_list <- opt$list_category
 # Legend file
 legend <- opt$legend
 # Annotation file
-annotation_file <- opt$annotation
+gene_product_file <- opt$gene_product
 # Ref index
 ref_index <- opt$ref_index
 # MAF threshold
@@ -208,9 +208,9 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
 message("Annotating...")
 if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
   # Load annotation
-  if (!is.null(annotation_file)) {
-    if (file.exists(annotation_file)) {
-    annotation <- readr::read_tsv(annotation_file, col_types = cols())
+  if (!is.null(gene_product_file)) {
+    if (file.exists(gene_product_file)) {
+    annotation <- readr::read_tsv(gene_product_file, col_types = cols())
 
     # Remove chromosomes
     if (!is.null(rm_chr)) {
