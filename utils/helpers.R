@@ -142,3 +142,23 @@ annotate_candidate_regions <- function(cr_res, annot) {
 
   return(res_annot)
 }
+
+# Transpose genomic positions
+get_chrom_transposition <- function(chrom_map, str_chr) {
+  if (length(str_chr) > 1) {
+    chromosome <- as.character(unique(str_chr))
+  } else {
+    chromosome <- as.character(str_chr)
+  }
+  if (length(chromosome) == 1) {
+    chrom_map <- chrom_map %>% mutate(chr = as.character(chr))
+    i <- chrom_map[which(chrom_map$chr == chromosome), ]$ind
+    result <- chrom_map %>% filter(ind <= i) %>% select(tr_chr) %>% sum()
+    if (length(str_chr) > 1) {
+      result <- rep(result, length(str_chr))
+    }
+  } else {
+    stop("Cannot use function.")
+  }
+  return(result)
+}
