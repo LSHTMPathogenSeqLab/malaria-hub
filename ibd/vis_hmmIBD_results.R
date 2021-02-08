@@ -2,8 +2,10 @@ library(ggplot2)
 library(readr)
 library(dplyr)
 
+source("~/software/malaria-hub/utils/helpers.R")
+
 workdir <- "~/hmmIBD_tests"
-metadata_file <- "pf_metadata_collapsed_w_region_np_June_2020.tsv"
+metadata_file <- "~/hmmIBD_tests/pf_metadata_collapsed_w_region_np_June_2020.tsv"
 country_label <- "country"
 region_label <- "region"
 suffix <- "04_02_2021"
@@ -14,31 +16,12 @@ category_order <- c("South_America", "South_Central_Africa")
 pattern <- "(.*?)_(.+)_(.*)"
 groupid <- 3
 
-get_chrom_transposition <- function(chrom_map, str_chr) {
-  if (length(str_chr) > 1) {
-    chromosome <- as.character(unique(str_chr))
-  } else {
-    chromosome <- as.character(str_chr)
-  }
-  if (length(chromosome) == 1) {
-    chrom_map <- chrom_map %>% mutate(chr = as.character(chr))
-    i <- chrom_map[which(chrom_map$chr == chromosome), ]$ind
-    result <- chrom_map %>% filter(ind <= i) %>% select(tr_chr) %>% sum()
-    if (length(str_chr) > 1) {
-      result <- rep(result, length(str_chr))
-    }
-  } else {
-    stop("Cannot use function.")
-  }
-  return(result)
-}
-
 # Load IBD
 combined_ibd_r <- read_tsv(file.path(workdir, sprintf("%s_hmmIBD_ibd_results_combined.tsv", suffix)), col_types = cols())
 # Load IBD fractions
 fraction_ibd_r <- read_tsv(file.path(workdir, sprintf("%s_hmmIBD_fraction_results_combined.tsv", suffix)), col_types = cols())
 # Load metadata
-metadata <- read_tsv(file.path(workdir, metadata_file), col_types = cols()) %>%
+metadata <- read_tsv(metadata_file, col_types = cols()) %>%
   select(c(country_label, region_label))
 # Reference index
 fai <- read.table(ref_index, stringsAsFactors = FALSE) %>%
