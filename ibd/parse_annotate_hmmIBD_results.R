@@ -47,7 +47,10 @@ option_list = list(
               metavar = "character"),
   make_option("--regex_groupid", type = "numeric", default = 3,
               help = "Regex pattern group",
-              metavar = "numeric")
+              metavar = "numeric"),
+  make_option("--no_minimize_effect", type = "logical", default = FALSE,
+              action = "store_true",
+              help = "Swithc of minimizing effect size")
 );
 
 opt_parser = OptionParser(option_list = option_list);
@@ -79,9 +82,18 @@ rm_chr <- opt$remove_chr
 pattern <- opt$regex_chr
 # Pattern group
 groupid <- opt$regex_groupid
+# No effect size
+no_minimize_effect <- opt$no_minimize_effect
 
 # Specify threads number
 setDTthreads(threads)
+
+# Decide on prefix
+if (no_minimize_effect) {
+  output_ending <- "results_combined_nme"
+} else {
+  output_ending <- "results_combined"
+}
 
 # Load category list
 if (file.exists(file.path(workdir, category_list))) {
@@ -163,7 +175,11 @@ for (category_n in category_list) {
                               end = as.numeric(as.character(end_window)))
                 setkey(y, start, end)
                 overlaps <- foverlaps(x, y, type = "any", which = TRUE)
-                sam_ibd <- length(unique(data_chr$sample1[which(overlaps$yid == 1)]))
+                if(no_minimize_effect) {
+                    sam_ibd <- length(unique(data_chr$id[which(overlaps$yid == 1)]))
+                } else {
+                    sam_ibd <- length(unique(data_chr$sample1[which(overlaps$yid == 1)]))
+                }
                 if (sam_ibd == 0) {
                     ibd_fr <- 0
                 } else {
@@ -193,12 +209,12 @@ message("Saving...")
 if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
   colnames(combined_ibd_r) <- c("chr", "start", "end", "fraction", "category")
   write.table(combined_ibd_r,
-    file.path(workdir, sprintf("%s_hmmIBD_ibd_results_combined.tsv", suffix)),
+    file.path(workdir, sprintf("%s_hmmIBD_ibd_%s.tsv", suffix, output_ending)),
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 
   colnames(combined_fraction_r) <- c("id", "category", "fraction")
   write.table(combined_fraction_r,
-    file.path(workdir, sprintf("%s_hmmIBD_fraction_results_combined.tsv", suffix)),
+    file.path(workdir, sprintf("%s_hmmIBD_fraction_%s.tsv", suffix, output_ending)),
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 } else {
   stop("None results to save. Stopping...")
@@ -238,7 +254,7 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
       filter(fraction >= qfrac) %>% ungroup()
 
     quantile_annot <- quantile %>% inner_join(res_annot) %>% distinct()
-    write.table(quantile_annot, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_q%s.tsv", suffix, as.character(th_quantile))),
+    write.table(quantile_annot, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_%s_q%s.tsv", suffix, output_ending, as.character(th_quantile))),
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
    } else {
           stop("Annotation file not found. Skiping....\n")
