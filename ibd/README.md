@@ -70,11 +70,12 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `-d --workdir` - working directory to save results
 * `--list_category` - file with category names per line
 * `-l --legend` - __ibd_matrix_hap_leg.tsv__ legend file (produced with previous script)
+* `--gene_product` - absolute location of annotation file. Requires to have chr, pos_start, pos_end, gene_id, product, gene_name fields. Used to annotate candidate regions.
 * `-r --ref_index` - Reference index (.fai)
 * `--window_size` - Window size for genome wide fraction calculations (default 10000)
 * `--quantile_cutoff` - 
 * `--suffix` - suffix for output files
-* `--gene_product` - absolute location of annotation file. Requires to have chr, pos_start, pos_end, gene_id, product, gene_name fields. Used to annotate candidate regions.
+
 * `-t --threads` - optional argument to specife threads usage
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
 * `--regex_chr` - regex pattern to detect chromosome numbering
