@@ -53,8 +53,8 @@ transpose_chr <- data.frame(chr = fai$chr, tr_chr = chrom_ends) %>%
                      mutate(ind = seq(1, nrow(.)))
 
 # Combine results wih region
-combined_ibd_r <- combined_ibd_r %>% left_join(metadata, by = c("category" = "country"))
-fraction_ibd_r <- fraction_ibd_r %>% left_join(metadata, by = c("category" = "country"))
+combined_ibd_r <- combined_ibd_r %>% left_join(metadata, by = c("category" = country_label))
+fraction_ibd_r <- fraction_ibd_r %>% left_join(metadata, by = c("category" = country_label))
 
 # Boxplot fractions
 g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(region_label))) +
@@ -62,7 +62,7 @@ g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(
   stat_summary(fun = mean, geom = "point", shape = 9,
                size = 1, color = "yellow") +
   theme_classic() +
-  guides(fill = guide_legend(title = country_label, nrow = 1)) +
+  guides(fill = guide_legend(title = "Region:", nrow = 1)) +
   theme(axis.line.x = element_line(color = "black"),
           axis.line.y = element_line(color = "black"),
           axis.text.x = element_text(size = 12, color = "black",
@@ -75,7 +75,7 @@ g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(
           strip.text.y = element_text(angle = 0, face = "bold", size = 9),
           strip.background = element_blank(),
           legend.position = "bottom") +
-  labs(x = "Country", y = "Pairwise fraction IBD", fill = "Region:")
+  labs(x = "Country", y = "Pairwise fraction IBD")
 
 # Transform to genetic distribution
 ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
@@ -86,7 +86,7 @@ ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
 
 # Establish order in plot
 # Arrange according to order
-ibd_frac_tr <- ibd_frac_tr %>% mutate(region = factor(region, levels = category_order)) %>% arrange(region)
+ibd_frac_tr <- ibd_frac_tr %>% mutate(region = factor(!!sym(region_label), levels = category_order)) %>% arrange(region)
 ibd_frac_tr <- ibd_frac_tr %>% mutate(country = factor(category, levels = unique(category)))
 
 # IBD pairwise fraction in 10kb windows
@@ -94,8 +94,8 @@ p <- ggplot(data = ibd_frac_tr) +
     geom_line(aes(x = pos_bp_ed, y = fraction, color = region)) +
     scale_y_continuous(limits = c(0, 1), breaks = c(0, 1), labels = c("0.0", "1.0")) +
     facet_grid(category ~ ., space = "free_x") +
-    labs(x = "Chromsome", y = "IBD Fraction", color = "Region:") +
-    guides(color = guide_legend(title = "Regions", nrow = 1, byrow = FALSE)) +
+    labs(x = "Chromsome", y = "IBD Fraction") +
+    guides(color = guide_legend(title = "Region:", nrow = 1, byrow = FALSE)) +
     theme_classic() +
     theme(axis.line.x = element_line(color = "black"),
           axis.line.y = element_line(color = "black"),
