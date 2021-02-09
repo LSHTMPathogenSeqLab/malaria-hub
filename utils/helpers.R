@@ -50,9 +50,10 @@ modify_df_ggplot <- function(df, th=4) {
           LOGPVALUE = as.numeric(LOGPVALUE)) %>%
     filter(!is.na(LOGPVALUE)) %>%
     group_by(Gene_name_1) %>%
-    mutate(pc = sum(LOGPVALUE >= th)) %>%
+    mutate(pc = sum(LOGPVALUE >= th),
+           pcmax = max(LOGPVALUE, na.rm=TRUE)) %>%
     ungroup() %>%
-    mutate(is_annotate = ifelse(Gene_name_1 != "" & pc >= 2, "yes", "no"),
+    mutate(is_annotate = ifelse(Gene_name_1 != "" & pc >= 2 & LOGPVALUE == pcmax, "yes", "no"),
            is_highlight = ifelse(LOGPVALUE >= th, "yes", "no"))
           
   # Compute chromosome sizes
@@ -71,31 +72,43 @@ modify_df_ggplot <- function(df, th=4) {
 
   axis_df <- mod_df %>%
    group_by(CHR) %>%
-   summarize(center = (max(BPcum) + min(BPcum)) / 2)
+   summarize(center = (max(BPcum) + min(BPcum)) / 2, .groups = 'drop')
 
   list("df_vis" = mod_df, "df_axis" = axis_df)
 }
 
-# Generate manhattan plot for iHS, rBS, XPEHH results
+# Generate manhattan plot for iHS, Rsb, XPEHH results
 generate_manhattan_ggplot <- function(df, axis, th, name, yname, hcolor = "orange") {
 
   p <- ggplot(data = df, aes(x = BPcum, y = LOGPVALUE)) +
       geom_point(aes(color = as.factor(CHR)), alpha = 1, size = 1.3) +
       scale_color_manual(values = rep(c("black", "grey"), 22)) +
       scale_x_continuous(label = axis$CHR, breaks = axis$center) +
+      scale_y_continuous(breaks = seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2),
+                         limits=c(first(seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2)),
+                                  last(seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2)))) +
       geom_point(data = subset(df, is_highlight == "yes"),
                  color = hcolor, size = 1.5) +
       geom_label_repel(data = (df %>% filter(is_annotate == "yes") %>%
                        group_by(Gene_name_1) %>% top_n(1, LOGPVALUE)),
-                       aes(label = Gene_name_1), size = 2) +
-      geom_hline(yintercept = th, color = "red", alpha = 0.8) +
+                       aes(label = Gene_name_1),
+                       size = 3,
+                       box.padding = 0.25,
+                       label.padding = 0.35,
+                       position = "identity") +
+      geom_hline(yintercept = th, color = "red", alpha = 1) +
       labs(title = name,
            x = "Chromosomes",
            y = yname) +
-      theme_bw() +
+      theme_classic() +
       theme(
           legend.position = "none",
           panel.border = element_blank(),
+          axis.text.x = element_text(size=12, color="black"),
+          axis.text.y = element_text(size=12, color = "black"),
+          axis.title.x = element_text(size=12, color = "black"),
+          axis.title.y = element_text(size=12, color = "black"),
+          plot.title = element_text(size=15, color="black", hjust = 0.5),
           panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank()
       )
@@ -108,15 +121,15 @@ annotate_candidate_regions <- function(cr_res, annot) {
   x <- data.table(chr = as.numeric(annot$chr),
                   start = as.numeric(as.character(annot$pos_start)),
                   end = as.numeric(as.character(annot$pos_end)))
-  y <- data.table(chr = as.numeric(as.character(cr_res$CHR)),
-                  start = as.numeric(as.character(cr_res$START)),
-                  end = as.numeric(as.character(cr_res$END)))
+  y <- data.table(chr = as.numeric(as.character(cr_res$chr)),
+                  start = as.numeric(as.character(cr_res$start)),
+                  end = as.numeric(as.character(cr_res$end)))
   
   data.table::setkey(y, chr, start, end)
   overlaps <- data.table::foverlaps(x, y, type = "any", which = TRUE)
 
   cr_res <- cr_res %>% 
-      arrange(CHR, START, END) %>%
+      arrange(chr, start, end) %>%
       mutate(idR = row_number())
   annot <- annot %>% dplyr::mutate(idA = row_number())
   df_overlaps <- as.data.frame(overlaps)
@@ -124,8 +137,28 @@ annotate_candidate_regions <- function(cr_res, annot) {
   # Merging
   res_annot <- cr_res %>%
     left_join(df_overlaps, by = c("idR" = "yid")) %>%
-    left_join(annot, by = c("xid" = "idA"))
-  res_annot <- res_annot %>% dplyr::select(-c("idR", "xid", "chr"))
+    left_join(annot, by = c("xid" = "idA", "chr"))
+  res_annot <- res_annot %>% dplyr::select(-c("idR", "xid"))
 
   return(res_annot)
+}
+
+# Transpose genomic positions
+get_chrom_transposition <- function(chrom_map, str_chr) {
+  if (length(str_chr) > 1) {
+    chromosome <- as.character(unique(str_chr))
+  } else {
+    chromosome <- as.character(str_chr)
+  }
+  if (length(chromosome) == 1) {
+    chrom_map <- chrom_map %>% mutate(chr = as.character(chr))
+    i <- chrom_map[which(chrom_map$chr == chromosome), ]$ind
+    result <- chrom_map %>% filter(ind <= i) %>% select(tr_chr) %>% sum()
+    if (length(str_chr) > 1) {
+      result <- rep(result, length(str_chr))
+    }
+  } else {
+    stop("Cannot use function.")
+  }
+  return(result)
 }

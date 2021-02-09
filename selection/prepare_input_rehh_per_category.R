@@ -8,7 +8,7 @@ library(optparse)
 library(tidyr)
 library(stringr)
 
-source("~/software/malaria-hub/selection/helpers.R")
+source("~/software/malaria-hub/utils/helpers.R")
 
 option_list = list(
   make_option(c("-d", "--workdir"), type = "character", default = '.',
@@ -44,6 +44,12 @@ option_list = list(
   make_option(c("--remove_chr"), type = "character", default = NULL,
               help = "Chromosomes to remove ex. Pf3D7_API_v3,Pf_M76611",
               metavar = "character"),
+  make_option("--regex_chr", type = "character", default = "(.*?)_(.+)_(.*)",
+              help = "Regex pattern for chromosome detection. Default matches Pf3D7_01_v3",
+              metavar = "character"),
+  make_option("--regex_groupid", type = "numeric", default = 3,
+              help = "Regex pattern group",
+              metavar = "numeric"),
   make_option(c("--threads"), type = "integer", default = 4,
               help = "Specify threads [default %default]",
               metavar = "number")
@@ -76,9 +82,10 @@ th_maf <- opt$maf
 workdir <- opt$workdir
 # Remove chromosomes
 rm_chr <- opt$remove_chr
-
 # Pattern for chromosome detection
-pattern <- "(.*?)_(.+)_(.*)"
+pattern <- opt$regex_chr
+# Pattern group
+groupid <- opt$regex_groupid
 
 # Load annotation file
 annotation <- read.table(annotation_file, sep = "\t", fill = TRUE, header = TRUE, stringsAsFactors = TRUE)
@@ -129,8 +136,8 @@ if (!is.null(rm_chr)) {
 }
 
 # Transform chromosome from string to numeric
-snp$chr <- as.numeric(stringr::str_match(snp$chr, pattern)[, 3])
-annotation$Chr <- as.numeric(stringr::str_match(annotation$Chr, pattern)[, 3])
+snp$chr <- as.numeric(stringr::str_match(snp$chr, pattern)[, groupid])
+annotation$Chr <- as.numeric(stringr::str_match(annotation$Chr, pattern)[, groupid])
 
 # Check if all samples match between binary matrix and metadata file
 metadata <- metadata %>% filter(!!sym(label_id) %in% colnames(snp[, -c(1:3)]))
