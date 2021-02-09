@@ -83,7 +83,7 @@ ibd_frac_tr_gg <- ibd_frac_tr_gg %>% mutate(category = factor(category, levels =
 # IBD pairwise fraction in 10kb windows
 p <- ggplot(data = ibd_frac_tr_gg) +
     geom_line(aes(x = pos_bp_ed, y = fraction, color = region), size=1) +
-    scale_y_continuous(limits = c(0, 1.0), breaks = c(0, 1.0), labels = c("0.0", "0.2")) +
+    scale_y_continuous(limits = c(0, 1.0), breaks = c(0, 1.0), labels = c("0.0", "1.0")) +
     facet_grid(category ~ ., space = "free_x") +
     labs(x = "Chromsome", y = "IBD Fraction") +
     guides(color = guide_legend(title = "Region:", nrow = 2, byrow = FALSE)) +
