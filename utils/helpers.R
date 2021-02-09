@@ -121,15 +121,15 @@ annotate_candidate_regions <- function(cr_res, annot) {
   x <- data.table(chr = as.numeric(annot$chr),
                   start = as.numeric(as.character(annot$pos_start)),
                   end = as.numeric(as.character(annot$pos_end)))
-  y <- data.table(chr = as.numeric(as.character(cr_res$CHR)),
-                  start = as.numeric(as.character(cr_res$START)),
-                  end = as.numeric(as.character(cr_res$END)))
+  y <- data.table(chr = as.numeric(as.character(cr_res$chr)),
+                  start = as.numeric(as.character(cr_res$start)),
+                  end = as.numeric(as.character(cr_res$end)))
   
   data.table::setkey(y, chr, start, end)
   overlaps <- data.table::foverlaps(x, y, type = "any", which = TRUE)
 
   cr_res <- cr_res %>% 
-      arrange(CHR, START, END) %>%
+      arrange(chr, start, end) %>%
       mutate(idR = row_number())
   annot <- annot %>% dplyr::mutate(idA = row_number())
   df_overlaps <- as.data.frame(overlaps)
@@ -137,8 +137,28 @@ annotate_candidate_regions <- function(cr_res, annot) {
   # Merging
   res_annot <- cr_res %>%
     left_join(df_overlaps, by = c("idR" = "yid")) %>%
-    left_join(annot, by = c("xid" = "idA"))
-  res_annot <- res_annot %>% dplyr::select(-c("idR", "xid", "chr"))
+    left_join(annot, by = c("xid" = "idA", "chr"))
+  res_annot <- res_annot %>% dplyr::select(-c("idR", "xid"))
 
   return(res_annot)
+}
+
+# Transpose genomic positions
+get_chrom_transposition <- function(chrom_map, str_chr) {
+  if (length(str_chr) > 1) {
+    chromosome <- as.character(unique(str_chr))
+  } else {
+    chromosome <- as.character(str_chr)
+  }
+  if (length(chromosome) == 1) {
+    chrom_map <- chrom_map %>% mutate(chr = as.character(chr))
+    i <- chrom_map[which(chrom_map$chr == chromosome), ]$ind
+    result <- chrom_map %>% filter(ind <= i) %>% select(tr_chr) %>% sum()
+    if (length(str_chr) > 1) {
+      result <- rep(result, length(str_chr))
+    }
+  } else {
+    stop("Cannot use function.")
+  }
+  return(result)
 }
