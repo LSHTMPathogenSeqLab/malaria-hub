@@ -4,14 +4,15 @@ library(dplyr)
 
 source("~/software/malaria-hub/utils/helpers.R")
 
-workdir <- "~/hmmIBD_tests"
-metadata_file <- "~/hmmIBD_tests/pf_metadata_collapsed_w_region_np_June_2020.tsv"
+workdir <- "~/hmmIBD_tests/method_ernest/"
+metadata_file <- "~/dataset_np/pf_final/pf_metadata_collapsed_w_region_np_June_2020.tsv"
 country_label <- "country"
 region_label <- "region"
-suffix <- "04_02_2021"
-ref_index <- "~/hmmIBD_tests/Pfalciparum.genome.fasta.fai"
+suffix <- "09_02_2021"
+ref_index <- "~/dataset_np/Pfalciparum.genome.fasta.fai"
 rm_chr <- c("Pf_M76611", "Pf3D7_API_v3")
-category_order <- c("South_America", "South_Central_Africa")
+category_order <- c("East_Africa", "Horn_of_Africa","Central_Africa","South_Central_Africa", "Southern_Africa", "West_Africa",
+                    "South_America", "Oceania", "Southeast_Asia")
 
 pattern <- "(.*?)_(.+)_(.*)"
 groupid <- 3
@@ -39,13 +40,16 @@ transpose_chr <- data.frame(chr = fai$chr, tr_chr = chrom_ends) %>%
 combined_ibd_r <- combined_ibd_r %>% left_join(metadata, by = c("category" = country_label))
 fraction_ibd_r <- fraction_ibd_r %>% left_join(metadata, by = c("category" = country_label))
 
+fraction_ibd_r_gg <- fraction_ibd_r %>% mutate(region = factor(!!sym(region_label), levels = category_order)) %>% arrange(region)
+fraction_ibd_r_gg <- fraction_ibd_r_gg %>% mutate(category = factor(category, levels = unique(category)))
+
 # Boxplot fractions
-g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(region_label))) +
+g <- ggplot(data = fraction_ibd_r_gg, aes(x = category, y = fraction, fill = !!sym(region_label))) +
   geom_boxplot(outlier.alpha = 0.2) +
   stat_summary(fun = mean, geom = "point", shape = 9,
                size = 1, color = "yellow") +
   theme_classic() +
-  guides(fill = guide_legend(title = "Region:", nrow = 1)) +
+  guides(fill = guide_legend(title = "Region:", nrow = 2)) +
   theme(axis.line.x = element_line(color = "black"),
           axis.line.y = element_line(color = "black"),
           axis.text.x = element_text(size = 12, color = "black",
@@ -60,6 +64,10 @@ g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = !!sym(
           legend.position = "bottom") +
   labs(x = "Country", y = "Pairwise fraction IBD")
 
+png("~/hmmIBD_tests/hmmIBD_Jan2021_fractions_across_countries.png", width=800, height = 600)
+print(g)
+dev.off()
+
 # Transform to genetic distribution
 ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
     mutate(trans = get_chrom_transposition(transpose_chr, chr)) %>%
@@ -69,16 +77,16 @@ ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
 
 # Establish order in plot
 # Arrange according to order
-ibd_frac_tr <- ibd_frac_tr %>% mutate(region = factor(!!sym(region_label), levels = category_order)) %>% arrange(region)
-ibd_frac_tr <- ibd_frac_tr %>% mutate(country = factor(category, levels = unique(category)))
+ibd_frac_tr_gg <- ibd_frac_tr %>% mutate(region = factor(!!sym(region_label), levels = category_order)) %>% arrange(region)
+ibd_frac_tr_gg <- ibd_frac_tr_gg %>% mutate(category = factor(category, levels = unique(category)))
 
 # IBD pairwise fraction in 10kb windows
-p <- ggplot(data = ibd_frac_tr) +
+p <- ggplot(data = ibd_frac_tr_gg) +
     geom_line(aes(x = pos_bp_ed, y = fraction, color = region)) +
     scale_y_continuous(limits = c(0, 1), breaks = c(0, 1), labels = c("0.0", "1.0")) +
     facet_grid(category ~ ., space = "free_x") +
     labs(x = "Chromsome", y = "IBD Fraction") +
-    guides(color = guide_legend(title = "Region:", nrow = 1, byrow = FALSE)) +
+    guides(color = guide_legend(title = "Region:", nrow = 2, byrow = FALSE)) +
     theme_classic() +
     theme(axis.line.x = element_line(color = "black"),
           axis.line.y = element_line(color = "black"),
@@ -95,3 +103,7 @@ p <- ggplot(data = ibd_frac_tr) +
                alpha = 0.5, linetype = "longdash", size = 0.2) +
     scale_x_continuous(breaks = unique(ibd_frac_tr$trans),
                        labels = unique(ibd_frac_tr$chr))
+
+png("~/hmmIBD_tests/hmmIBD_Jan2021_genomewide_frac_across_countries_nme.png", width=800, height = 600)
+print(p)
+dev.off()
