@@ -146,8 +146,8 @@ _Results per category_
 
 ## parse_annotate_hmmIBD_results.R ##
 
-* `<suffix>_hmmIBD_fraction_results_combined.tsv` - table with pairwise fraction collected for all specified categories
-* `<suffix>_hmmIBD_ibd_results_combined.tsv` - table with re-calculated genome-wide IBD fractions collected for all specified categories
+* `<suffix>_hmmIBD_fraction_results_combined.tsv` - table with pairwise fraction collected for all specified categories (If --no_minimize_effect option used ending with nme.tsv)
+* `<suffix>_hmmIBD_ibd_results_combined.tsv` - table with re-calculated genome-wide IBD fractions collected for all specified categories (If --no_minimize_effect option used ending with nme.tsv)
 * `<suffix>_hmmIBD_ibd_annotated_results_combined_q0.95.tsv` - table with annotated candidate regions collected for all specified categories
 
 ## Visualization
