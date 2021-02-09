@@ -78,12 +78,12 @@ ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
 # Establish order in plot
 # Arrange according to order
 ibd_frac_tr_gg <- ibd_frac_tr %>% mutate(region = factor(!!sym(region_label), levels = category_order)) %>% arrange(region)
-ibd_frac_tr_gg <- ibd_frac_tr_gg %>% mutate(category = factor(category, levels = unique(category)))
+ibd_frac_tr_gg <- ibd_frac_tr_gg %>% mutate(category = factor(category, levels = unique(category))) %>% as.data.frame()
 
 # IBD pairwise fraction in 10kb windows
 p <- ggplot(data = ibd_frac_tr_gg) +
-    geom_line(aes(x = pos_bp_ed, y = fraction, color = region)) +
-    scale_y_continuous(limits = c(0, 1), breaks = c(0, 1), labels = c("0.0", "1.0")) +
+    geom_line(aes(x = pos_bp_ed, y = fraction, color = region), size=1) +
+    scale_y_continuous(limits = c(0, 1.0), breaks = c(0, 1.0), labels = c("0.0", "0.2")) +
     facet_grid(category ~ ., space = "free_x") +
     labs(x = "Chromsome", y = "IBD Fraction") +
     guides(color = guide_legend(title = "Region:", nrow = 2, byrow = FALSE)) +
@@ -99,11 +99,11 @@ p <- ggplot(data = ibd_frac_tr_gg) +
           strip.text.y = element_text(angle = 0, face = "bold", size = 9),
           strip.background = element_blank(),
           legend.position = "bottom") +
-    geom_vline(data = ibd_frac_tr, aes(xintercept = trans), color = "black",
+    geom_vline(data = ibd_frac_tr_gg, aes(xintercept = trans), color = "black",
                alpha = 0.5, linetype = "longdash", size = 0.2) +
-    scale_x_continuous(breaks = unique(ibd_frac_tr$trans),
-                       labels = unique(ibd_frac_tr$chr))
+    scale_x_continuous(breaks = unique(ibd_frac_tr_gg$trans),
+                       labels = unique(ibd_frac_tr_gg$chr))
 
-png("~/hmmIBD_tests/hmmIBD_Jan2021_genomewide_frac_across_countries_nme.png", width=800, height = 600)
+png("~/hmmIBD_tests/hmmIBD_Jan2021_genomewide_frac_across_countries.png", width=800, height = 600)
 print(p)
 dev.off()
