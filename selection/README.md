@@ -7,8 +7,8 @@ Firstly, parsing, filtering and recoding input to match requirements of rehh pac
 Filtering steps:
 * selecting snps with MAF > th (default 0.01)
 * selecting samples with Fws > th (default 0.95)
-* data2haplohh(min_perc_geno.hap = 80, min_perc_geno.mrk = 70) (hard-coded)
-* !! IMPORTANT !! all missing calls are replaced to reference and all mixed calls to alternative
+* filtering missing data in data2haplohh() function in samples (min_perc_geno.hap) and snps (min_perc_geno.mrk). Can be modified with arg `rehh_min_perc_hap` & `rehh_min_perc_mrk`) (default min_perc_geno.hap = 80 & min_perc_geno.mrk = 70)
+* !! IMPORTANT !! As default missing or mixed calls are not modified. If data is of high quality replacement can be considered (missing calls -> reference and mixed calls -> alternative). To proceed with forced data recoding add `--forced_recode` argument.
 
 Secondly, using outcomes from first part calculating standard metrics iHS (per population), rBS and XPEHH (pairwise comparisons between populations). Metric results are represented in form of manhattan plots, tables with highly significant selection snps and candidate regions. All results are annotated. Collection of results are done for all populations at once.
 
@@ -76,6 +76,8 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `--fws_th` - threshold for Fws score (default 0.95)
 * `--label_id` - column name in metadata with sample id
 * `--maf` - threshold for MAF (default 0.01)
+* `--rehh_min_perc_hap` - Threshold data2haplohh % of missing data for sample  (default 80)
+* `--rehh_min_perc_mrk` - Threshold data2haplohh % of missing data for snp (default 70)
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
 * `--regex_chr` - regex pattern to detect chromosome numbering
 * `--regex_groupid` - group id for regex with numbering
