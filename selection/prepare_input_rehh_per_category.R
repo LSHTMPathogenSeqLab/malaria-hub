@@ -38,9 +38,15 @@ option_list = list(
   make_option(c("--label_id"), type = "character", default = "sra_run",
               help = "Label name in metadata for id column - [default %default]",
               metavar = "character"),
-   make_option(c("--maf"), type = "numeric", default = 0.01,
+  make_option(c("--maf"), type = "numeric", default = 0.01,
               help = "MAF threshold [default %default]",
               metavar = "number"),
+  make_option(c("--na_char"), type = "character", default = "NA",
+              help = "Specify NA characters",
+              metavar = "character"),
+  make_option("--forced_recode", type = "logical", default = FALSE,
+              action = "store_true",
+              help = "Recode missing to REF and mixed to ALT"),
   make_option(c("--remove_chr"), type = "character", default = NULL,
               help = "Chromosomes to remove ex. Pf3D7_API_v3,Pf_M76611",
               metavar = "character"),
@@ -80,6 +86,10 @@ threshold_fws <- opt$fws_th
 th_maf <- opt$maf
 # Working directory
 workdir <- opt$workdir
+# Missing calls character
+na_char <- opt$na_char
+# Recode data
+forced_recode <- opt$forced_recode
 # Remove chromosomes
 rm_chr <- opt$remove_chr
 # Pattern for chromosome detection
@@ -146,8 +156,10 @@ if (all(metadata[[label_id]] == colnames(snp[, -c(1:3)]))) {
 }
 
 # Recode missing data
-snp[snp == "N"] <- NA
-snp[snp == "."] <- NA
+if (!is.na(na_char)) {
+    snp[snp == na_char] <- NA
+    snp[snp == "."] <- NA
+}
 
 # Separate SNP calls only matrix
 snp_c <- as.data.frame(snp[, -(1:3)])
@@ -158,10 +170,14 @@ snp_d <- as.data.frame(snp[, (1:3)])
 
 rm(snp)
 
-# Set NA to ref i.e. 0
 maj3 <- snp_c
-maj3[is.na(snp_c)] <- 0
-maj3[snp_c == 0.5] <- 1
+if (forced_recode) {
+# Set NA to ref i.e. 0
+  maj3[is.na(snp_c)] <- 0
+  maj3[snp_c == 0.5] <- 1
+} else {
+  maj3[snp_c == 0.5] <- NA
+}
 
 rm(snp_c)
 
