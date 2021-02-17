@@ -41,6 +41,12 @@ option_list = list(
   make_option(c("--maf"), type = "numeric", default = 0.01,
               help = "MAF threshold [default %default]",
               metavar = "number"),
+  make_option(c("--rehh_min_perc_hap"), type = "numeric", default = 80,
+              help = "Threshold data2haplohh % of missing data for sample [default %default]",
+              metavar = "number"),
+  make_option(c("--rehh_min_perc_mrk"), type = "numeric", default = 0.01,
+              help = "Threshold data2haplohh % of missing data for snp [default %default]",
+              metavar = "number"),
   make_option(c("--na_char"), type = "character", default = "NA",
               help = "Specify NA characters",
               metavar = "character"),
@@ -84,6 +90,10 @@ label_fws <- opt$label_fws
 threshold_fws <- opt$fws_th
 ## MAF threshold
 th_maf <- opt$maf
+# Threshold data2haplohh::min_perc_gen.hap
+th_min_perc_sam <- opt$rehh_min_perc_hap
+# Threshold data2haplohh::min_perc_gen.mrk
+th_min_perc_snp <- opt$rehh_min_perc_mrk
 # Working directory
 workdir <- opt$workdir
 # Missing calls character
@@ -236,8 +246,8 @@ for (uchr in u_chr) {
                                 map_file = file.path(workdir, sprintf("snp.info.inp.%s", category_str)),
                                 recode.allele = FALSE,
                                 chr.name = uchr,
-                                min_perc_geno.hap = 80,
-                                min_perc_geno.mrk = 70,
+                                min_perc_geno.hap = th_min_perc_sam,
+                                min_perc_geno.mrk = th_min_perc_snp,
                                 min_maf = 0)
     res_chr_s <- scan_hh(hap_chr_pop)
     results_hh <- rbind(results_hh, res_chr_s)
