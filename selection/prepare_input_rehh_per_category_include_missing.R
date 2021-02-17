@@ -155,6 +155,7 @@ write.table(snp_count,
             file.path(workdir, sprintf("mat_bin_count_%s.tsv", category_str)),
             quote = FALSE, col.names = TRUE, row.names = FALSE, sep = "\t")
 
+
 # Recode missing data
 snp[snp == "N"] <- NA
 snp[snp == "."] <- NA
@@ -170,8 +171,8 @@ rm(snp)
 
 # Set NA to ref i.e. 0
 maj3 <- snp_c
-maj3[is.na(snp_c)] <- 0
-maj3[snp_c == 0.5] <- 1
+maj3[is.na(snp_c)] <- NA
+maj3[snp_c == 0.5] <- NA
 
 rm(snp_c)
 

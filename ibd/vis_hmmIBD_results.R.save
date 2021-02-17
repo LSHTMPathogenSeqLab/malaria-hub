@@ -1,0 +1,122 @@
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(readr)
+
+workdir <- "."
+metadata_file <- "~/Pknowlesi/Fst/Metadata_148_final.tsv"
+country_label <- "Group_pca"
+region_label <- "Group_pca"
+suffix <- "08_02_2021"
+ref_index <- "~/Pknowlesi/Fst/strain_A1_H.1.Icor.fasta.fai"
+rm_chr <- c("new_API_strain_A1_H.1" ,"PKNH_MIT_v2")
+#category_order <- c("Pen-Pk", "")
+
+pattern <- "(.*?)_(.+)_(.+)_(.*)"
+groupid <- 4
+
+get_chrom_transposition <- function(chrom_map, str_chr) {
+  if (length(str_chr) > 1) {
+    chromosome <- as.character(unique(str_chr))
+  } else {
+    chromosome <- as.character(str_chr)
+  }
+  if (length(chromosome) == 1) {
+    chrom_map <- chrom_map %>% mutate(chr = as.character(chr))
+    i <- chrom_map[which(chrom_map$chr == chromosome), ]$ind
+    result <- chrom_map %>% filter(ind <= i) %>% select(tr_chr) %>% sum()
+    if (length(str_chr) > 1) {
+      result <- rep(result, length(str_chr))
+    }
+  } else {
+    stop("Cannot use function.")
+  }
+  return(result)
+}
+
+# Load IBD
+combined_ibd_r <- read_tsv(file.path(workdir, sprintf("%s_hmmIBD_ibd_results_combined.tsv", suffix)), col_types = cols())
+# Load IBD fractions
+fraction_ibd_r <- read_tsv(file.path(workdir, sprintf("%s_hmmIBD_fraction_results_combined.tsv", suffix)), col_types = cols())
+# Load metadata
+metadata <- read_tsv(metadata_file, col_types = cols()) %>%
+  select(c(country_label, region_label))
+# Reference index
+ fai <- read.table(ref_index, stringsAsFactors = FALSE) %>%
+  rename(chr = V1, end_chr = V2) %>%
+  select(chr, end_chr) %>%
+  mutate(start_chr = 1) %>%
+  filter(!chr %in% rm_chr)
+
+fai$chr <- as.numeric(stringr::str_match(fai$chr, pattern)[, groupid])
+chrom_ends <- c(0, fai$end_chr[-max(NROW(fai$end_chr))])
+transpose_chr <- data.frame(chr = fai$chr, tr_chr = chrom_ends) %>%
+                     mutate(ind = seq(1, nrow(.)))
+
+# Combine results wih region
+combined_ibd_r <- combined_ibd_r %>% left_join(metadata, by = c("category" = country_label))
+fraction_ibd_r <- fraction_ibd_r %>% left_join(metadata, by = c("category" = country_label))
+
+# Boxplot fractions
+g <- ggplot(data = fraction_ibd_r, aes(x = category, y = fraction, fill = category)) +
+  geom_boxplot(outlier.alpha = 0.2) +
+  stat_summary(fun = mean, geom = "point", shape = 9,
+               size = 1, color = "yellow") +
+  theme_classic() +
+  guides(fill = guide_legend(title = "Region:", nrow = 1)) +
+  theme(axis.line.x = element_line(color = "black"),
+          axis.line.y = element_line(color = "black"),
+          axis.text.x = element_text(size = 12, color = "black",
+                                     angle = 90, vjust = -0.5),
+          axis.text.y = element_text(size = 12, color = "black"),
+          axis.title.x = element_text(size = 12, color = "black"),
+          axis.title.y = element_text(size = 12, color = "black"),
+          plot.title = element_text(size = 15, color = "black", hjust = 0.5),
+          strip.placement = "outside",
+          strip.text.y = element_text(angle = 0, face = "bold", size = 9),
+          strip.background = element_blank(),
+          legend.position = "bottom") +
+  labs(x = "Country", y = "Pairwise fraction IBD")
+
+# Transform to genetic distribution
+ibd_frac_tr <- combined_ibd_r %>% group_by(chr) %>%
+    mutate(trans = get_chrom_transposition(transpose_chr, chr)) %>%
+    mutate(pos_bp_ed = as.numeric(as.numeric(start) + trans),
+            Fraction = as.numeric(fraction)) %>%
+    ungroup()
+
+# Establish order in plot
+# Arrange according to order
+#ibd_frac_tr <- ibd_frac_tr %>% mutate(region = factor(!!sym(region_label), levels = category_order)) %>% arrange(region)
+#ibd_frac_tr <- ibd_frac_tr %>% mutate(country = factor(category, levels = unique(category)))
+
+# IBD pairwise fraction in 10kb windows
+p <- ggplot(data = ibd_frac_tr) +
+    geom_line(aes(x = pos_bp_ed, y = fraction, color = category)) +
+    scale_y_continuous(limits = c(0, 1), breaks = c(0, 1), labels = c("0.0", "1.0")) +
+    facet_grid(category ~ ., space = "free_x") +
+    labs(x = "Chromsome", y = "IBD Fraction") +
+    guides(color = guide_legend(title = "Region:", nrow = 1, byrow = FALSE)) +
+    theme_classic() +
+    theme(axis.line.x = element_line(color = "black"),
+          axis.line.y = element_line(color = "black"),
+          axis.text.x = element_text(size = 12, color = "black", angle = 0, vjust = -0.5),
+          axis.text.y = element_text(size = 12, color = "black"),
+          axis.title.x = element_text(size = 12, color = "black"),
+          axis.title.y = element_text(size = 12, color = "black"),
+          plot.title = element_text(size = 15, color = "black", hjust = 0.5),
+          strip.placement = "outside",
+          strip.text.y = element_text(angle = 0, face = "bold", size = 9),
+          strip.background = element_blank(),
+          legend.position = "bottom") +
+    geom_vline(data = ibd_frac_tr, aes(xintercept = trans), color = "black",
+               alpha = 0.5, linetype = "longdash", size = 0.2) +
+    scale_x_continuous(breaks = unique(ibd_frac_tr$trans),
+                       labels = unique(ibd_frac_tr$chr))
+
+
+## Save plots 
+pdf("hmmIBD_plots.pdf")
+plot(g)
+plot(p)
+dev.off()

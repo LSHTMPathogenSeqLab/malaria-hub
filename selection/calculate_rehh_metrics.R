@@ -6,7 +6,7 @@ library(ggplot2)
 library(ggrepel)
 library(stringr)
 
-source("~/software/malaria-hub/utils/helpers.R")
+source("~/software/malaria-hub/malaria-hub/utils/helpers.R")
 
 option_list = list(
     make_option(c("-d", "--workdir"), type = "character", default = NULL,
@@ -131,9 +131,12 @@ for (category in categories) {
     cat("\n## iHS ##\n")
     ihh <- fread(filec, sep = "\t", header = TRUE, data.table = FALSE)
     ihs <- rehh::ihh2ihs(ihh, min_maf = 0.0, freqbin = 0.05)
+    count <- fread(file.path(workdir, paste0("mat_bin_count_", category, ".tsv"))) %>%
+	dplyr::select(chr, pos, ref, `0`, `1`, `0.5`, `N`)
 
     if (nrow(ihs$ihs) > 1) {
-      ihsA <- ihs$ihs %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+      ihsA <- ihs$ihs %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos")) %>% 
+		left_join(count, by = c("CHR" = "chr", "POSITION" = "pos"))
       gg_data <- gg_to_plot <- modify_df_ggplot(ihsA, th = ihs_th)
 
       generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
@@ -170,12 +173,17 @@ for (category in categories) {
         fileoc <- file.path(workdir, paste0(prefix, "_", contr_category, ".tsv"))
         if (file.exists(fileoc)) {
           ihh_oc <- fread(fileoc, sep = "\t", header = TRUE, data.table = FALSE)
+	  count_oc <- fread(file.path(workdir, paste0("mat_bin_count_", contr_category, ".tsv"))) %>%
+		dplyr::rename(`0_contr` = `0`, `1_contr` = `1`, `0.5_contr` = `0.5`, `N_contr` = `N`) %>%
+		dplyr::select(chr, pos, ref, `0_contr`, `1_contr`, `0.5_contr`, `N_contr`)
           #### Rsb ####
           cat("\n## Rsb ##\n")
           rsb <- rehh::ines2rsb(ihh, ihh_oc)
 
           if (nrow(rsb) > 1) {
-            rsbA <- rsb %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+            rsbA <- rsb %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos")) %>%
+			left_join(count, by = c("CHR" = "chr", "POSITION" = "pos")) %>%
+			left_join(count_oc, by = c("CHR" = "chr", "POSITION" = "pos", "ref"))
             gg_data <- gg_to_plot <- modify_df_ggplot(rsbA, th = rsb_th)
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
@@ -209,7 +217,10 @@ for (category in categories) {
           xpehh <- rehh::ies2xpehh(ihh, ihh_oc)
 
           if (nrow(xpehh) > 1) {
-            xpehhA <- xpehh %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+            xpehhA <- xpehh %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos")) %>%
+                        left_join(count, by = c("CHR" = "chr", "POSITION" = "pos")) %>%
+                        left_join(count_oc, by = c("CHR" = "chr", "POSITION" = "pos", "ref"))
+
             gg_data <- gg_to_plot <- modify_df_ggplot(xpehhA, th = xpehh_th)
 
             generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
