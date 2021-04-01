@@ -162,3 +162,20 @@ get_chrom_transposition <- function(chrom_map, str_chr) {
   }
   return(result)
 }
+
+#' Combine PCA with metadata
+combine_PCA_w_metadata <- function(pc_points, metadata, label_id="sample_id") {
+    df <- as.data.frame(pc_points$points)
+    colnames(df) <- paste0("PC", seq_len(ncol(df)))
+    df <- df %>% mutate(!!sym(label_id) := rownames(.))
+    df_com <- df %>% left_join(metadata)
+
+    df_com
+}
+
+#' Calculate variance
+calc_variance_explained <- function(pc_points) {
+    vars <- round(pc_points$eig / sum(pc_points$eig) * 100, 1)
+    names(vars) <- paste0("PC", seq_len(length(vars)))
+    vars
+}
