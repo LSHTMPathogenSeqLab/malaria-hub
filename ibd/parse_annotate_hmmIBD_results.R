@@ -139,9 +139,9 @@ combined_fraction_r <- c()
 for (category_n in category_list) {
     message(category_n)
     # Define data for category
-    fraction <- file.path(workdir, sprintf("hmmIBD_%s_maf%s_out.hmm_fract.txt", category_n, as.character(th_maf)))
+    fraction <- file.path(workdir, sprintf("hmmIBD_%s_02_out.hmm_fract.txt", category_n))
     message(fraction)
-    hmm_ibd <- file.path(workdir, sprintf("hmmIBD_%s_maf%s_out.hmm.txt", category_n, as.character(th_maf)))
+    hmm_ibd <- file.path(workdir, sprintf("hmmIBD_%s_02_out.hmm.txt", category_n))
     message(hmm_ibd)
 
     # Read data
@@ -226,7 +226,7 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
   # Load annotation
   if (!is.null(gene_product_file)) {
     if (file.exists(gene_product_file)) {
-    annotation <- readr::read_tsv(gene_product_file, col_types = cols())
+    annotation <- readr::read_csv(gene_product_file, col_types = cols())
 
     # Remove chromosomes
     if (!is.null(rm_chr)) {
@@ -253,7 +253,7 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
       mutate(qfrac = quantile(fraction, th_quantile)) %>%
       filter(fraction >= qfrac) %>% ungroup()
 
-    quantile_annot <- quantile %>% inner_join(res_annot) %>% distinct()
+    quantile_annot <- quantile %>% left_join(res_annot) %>% distinct()
     write.table(quantile_annot, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_%s_q%s.tsv", suffix, output_ending, as.character(th_quantile))),
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
    } else {

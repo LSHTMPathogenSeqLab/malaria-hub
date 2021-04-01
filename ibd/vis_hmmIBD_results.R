@@ -4,11 +4,11 @@ library(dplyr)
 
 source("~/software/malaria-hub/utils/helpers.R")
 
-workdir <- "~/hmmIBD_tests/method_ernest/"
-metadata_file <- "~/dataset_np/pf_final/pf_metadata_collapsed_w_region_np_June_2020.tsv"
+workdir <- "~/Pvivax/analysis_manuscript_Nov2020/IBD_Ernest_copy_s7/hmmibd_pv/"
+#metadata_file <- "~/Pvivax/analysis_manuscript_Nov2020/IBD_Ernest_copy_s7/"
 country_label <- "country"
 region_label <- "region"
-suffix <- "09_02_2021"
+suffix <- "w_minimize_effect"
 ref_index <- "~/dataset_np/Pfalciparum.genome.fasta.fai"
 rm_chr <- c("Pf_M76611", "Pf3D7_API_v3")
 category_order <- c("East_Africa", "Horn_of_Africa","Central_Africa","South_Central_Africa", "Southern_Africa", "West_Africa",
