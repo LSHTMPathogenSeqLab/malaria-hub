@@ -93,13 +93,6 @@ min_l_seg <- opt$LSEGMENT
 # Specify threads number
 setDTthreads(threads)
 
-# Decide on prefix
-# if (no_minimize_effect) {
-#   output_ending <- "results_combined_nme"
-# } else {
-#   output_ending <- "results_combined"
-# }
-
 # Load category list
 if (file.exists(file.path(workdir, category_list))) {
     category_list <- read.table(file.path(workdir, category_list),
@@ -153,62 +146,65 @@ for (category_n in category_list) {
     if (file.exists(fraction) & file.exists(hmm_ibd)) {
         ibd_frac <- read_tsv(fraction, col_types = cols()) %>% as.data.frame()
         ibd_data <- read_tsv(hmm_ibd, col_types = cols()) %>% as.data.frame()
-        # Parse IBD information
-        ibd_data <- ibd_data %>%
-            unite(id, sample1, sample2, sep = "_", remove = FALSE) %>%
-            mutate(total = n_distinct(id),
-                   length = end - start + 1)
-        ibd_conf <- ibd_data %>%
-            filter(different == 0 & Nsnp > min_n_snp & length > min_l_seg) %>%
-            arrange(chr, start, end) %>%
-            rename(pos_start = start, pos_end = end)
+        if (nrow(ibd_frac) != 0 & nrow(ibd_data) != 0) {
+          # Parse IBD information
+          ibd_data <- ibd_data %>%
+              unite(id, sample1, sample2, sep = "_", remove = FALSE) %>%
+              mutate(total = n_distinct(id),
+                    length = end - start + 1)
+          ibd_conf <- ibd_data %>%
+              filter(different == 0 & Nsnp > min_n_snp & length > min_l_seg) %>%
+              arrange(chr, start, end) %>%
+              rename(pos_start = start, pos_end = end)
 
-        # Parse everything
-        chr_vec <- unique(snp_hmmibd_02_1[, 1])
-        results <- c()
-        total <- unique(ibd_conf$total)
-        #TODO collapse to functions
-        for (k in seq_along(chr_vec)) {
-            message(k)
-            data_chr <- ibd_conf %>% filter(chr == chr_vec[k])
-            length_chr <- fai %>% filter(chr == chr_vec[k]) %>%
-                select(end_chr) %>% pull()
-            
-            # Specify all windows for chromosome (1:length_chr)
-            windows <- data.frame(chr = chr_vec[k],
-                                  win_start = seq(1, length_chr, by = window_size),
-                                  win_end = seqlast(window_size, length_chr, by = window_size))
-            
-            x <- data.table(start = as.numeric(as.character(data_chr$pos_start)),
-               end = as.numeric(as.character(data_chr$pos_end)))
-            y <- data.table(start = as.numeric(as.character(windows$win_start)),
-               end = as.numeric(as.character(windows$win_end)))
+          # Parse everything
+          chr_vec <- unique(snp_hmmibd_02_1[, 1])
+          results <- c()
+          total <- unique(ibd_conf$total)
+          #TODO collapse to functions
+          for (k in seq_along(chr_vec)) {              
+              data_chr <- ibd_conf %>% filter(chr == chr_vec[k])
+              length_chr <- fai %>% filter(chr == chr_vec[k]) %>%
+                  select(end_chr) %>% pull()
+              
+              # Specify all windows for chromosome (1:length_chr)
+              windows <- data.frame(chr = chr_vec[k],
+                                    win_start = seq(1, length_chr, by = window_size),
+                                    win_end = seqlast(window_size, length_chr, by = window_size))
+              
+              x <- data.table(start = as.numeric(as.character(data_chr$pos_start)),
+                end = as.numeric(as.character(data_chr$pos_end)))
+              y <- data.table(start = as.numeric(as.character(windows$win_start)),
+                end = as.numeric(as.character(windows$win_end)))
 
-            setkey(y, start, end)
-            overlaps <- foverlaps(x, y, type = "any", which = TRUE)
-            matched <- cbind(data_chr[overlaps$xid, ], as.data.frame(y[overlaps$yid])) %>% #TODO make nicer
-                    mutate(rel_start = ifelse(pos_start > start, pos_start, start),
-                           rel_end = ifelse(pos_end < end, pos_end, end),
-                           rel_length = rel_end - rel_start + 1)
+              setkey(y, start, end)
+              overlaps <- foverlaps(x, y, type = "any", which = TRUE)
+              matched <- cbind(data_chr[overlaps$xid, ], as.data.frame(y[overlaps$yid])) %>% #TODO make nicer
+                      mutate(rel_start = ifelse(pos_start > start, pos_start, start),
+                            rel_end = ifelse(pos_end < end, pos_end, end),
+                            rel_length = rel_end - rel_start + 1)
 
-            matched_w <- windows %>% full_join(matched, by = c("chr", "win_start" = "start", "win_enfs" = "end"))
-            matched_wm <- matched_w %>% group_by(ws, we) %>%
-                mutate(m_sum = sum(rel_length, na.rm = T),
-                       m_sum_av = ifelse(!is.na(m_sum), m_sum / window_size, 0),
-                       metric = m_sum_av / total) %>%
-                select(chr, ws, we, m_sum, m_sum_av, metric) %>%
-                distinct()
-            results <- rbind(results, matched_w)
-        }
-        results_it <- results %>% as.data.frame() %>%
-            mutate(country = category_n)
-        combined_ibd_r <- rbind(combined_ibd_r, results_it)
+              matched_w <- windows %>% full_join(matched, by = c("chr", "win_start" = "start", "win_end" = "end"))
+              matched_wm <- matched_w %>% group_by(win_start, win_end) %>%
+                  mutate(m_sum = sum(rel_length, na.rm = T),
+                         m_sum_av = ifelse(!is.na(m_sum), m_sum / window_size, 0),
+                         fraction = m_sum_av / total) %>%
+                  select(chr, win_start, win_end, m_sum, m_sum_av, fraction) %>%
+                  distinct()
+              results <- rbind(results, matched_wm)
+          }
+          results_it <- results %>% as.data.frame() %>%
+              mutate(category = category_n)
+          combined_ibd_r <- rbind(combined_ibd_r, results_it)
 
-        # Parse fraction information
-        frac_it <- ibd_frac %>% unite(id, sample1, sample2, sep = "_") %>%
-                                mutate(country = category_n) %>%
-                                select(c(id, country, fract_sites_IBD))
-        combined_fraction_r <- rbind(combined_fraction_r, frac_it)
+          # Parse fraction information
+          frac_it <- ibd_frac %>% unite(id, sample1, sample2, sep = "_") %>%
+                                  mutate(category = category_n) %>%
+                                  select(c(id, category, fract_sites_IBD))
+          combined_fraction_r <- rbind(combined_fraction_r, frac_it)
+      } else {
+        message("hmmIBD results empty. Skipping...")
+      }
     } else {
         message("hmmIBD results not found. Check path once again. Skipping...")
     }
@@ -216,9 +212,9 @@ for (category_n in category_list) {
 
 message("Saving...")
 if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
-  colnames(combined_ibd_r) <- c("chr", "start", "end", "fraction", "category")
+  #colnames(combined_ibd_r) <- c("chr", "start", "end", "fraction", "category")
   write.table(combined_ibd_r,
-    file.path(workdir, sprintf("%s_hmmIBD_ibd.tsv", suffix)),
+    file.path(workdir, sprintf("%s_hmmIBD_ibd.tsv", suffix)), #TODO save window, Nsnp, Length
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 
   colnames(combined_fraction_r) <- c("id", "category", "fraction")
@@ -252,19 +248,37 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
 
     # Transform chromosome from string to numeric
     annotation$chr <- as.numeric(stringr::str_match(annotation$chr, pattern)[, groupid])
-    ibd_regions <- combined_ibd_r %>% select(c(chr, start, end)) %>% distinct()
+    ibd_regions <- combined_ibd_r %>% rename("start" = "win_start", "end" = "win_end") %>% select(c(chr, start, end)) %>% distinct()
 
     # Find overlap
     res_annot <- annotate_candidate_regions(ibd_regions, annotation)
 
     # Calculate quantiles
     quantile <- combined_ibd_r %>% group_by(category) %>%
-      mutate(qfrac = quantile(fraction, th_quantile)) %>%
-      filter(fraction >= qfrac) %>% ungroup()
+      mutate(qfrac = quantile(fraction, th_quantile, na.rm = T)) %>%
+      filter(fraction >= qfrac) %>% ungroup() %>% distinct()
 
-    quantile_annot <- quantile %>% inner_join(res_annot) %>% distinct()
+    quantile_annot <- quantile %>%
+      rename("start" = "win_start", "end" = "win_end") %>%
+      inner_join(res_annot) %>% ungroup()
     write.table(quantile_annot, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_q%s.tsv", suffix, as.character(th_quantile))),
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+
+    # Wide format
+    quantile_regs <- quantile %>% select(chr, win_start, win_end) %>% distinct()
+    quantile_annot_wide <- combined_ibd_r %>% right_join(quantile_regs) %>%
+      rename("start" = "win_start", "end" = "win_end") %>%
+      left_join(res_annot) %>%
+      select(-c(pos_start, pos_end)) %>%
+      group_by(chr, start, end, category, fraction) %>%
+      dplyr::summarise(genes = paste0(gene_name, "(", X6, ")", collapse = "; "),
+                       products = paste0(gene_product, collapse = "; ")) %>%
+      mutate(genes = gsub("\\(NA\\)", "", genes)) %>%
+      mutate(fraction = round(fraction, 3)) %>%
+      tidyr::pivot_wider(names_from = "category", values_from = "fraction") %>% ungroup()
+
+      write.table(quantile_annot_wide, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_q%s_wide.tsv", suffix, as.character(th_quantile))),
+          sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
    } else {
           stop("Annotation file not found. Skiping....\n")
     }
