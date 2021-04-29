@@ -29,7 +29,7 @@ option_list = list(
               help = "MAF",
               metavar = "numeric"),
   make_option(c("-w", "--window_size"), type = "numeric", default = 10000,
-              help = "Specify window size",
+              help = "Specify window size in bp. Default: 10000",
               metavar = "numeric"),
   make_option("--quantile_cutoff", type = "numeric", default = 0.95,
               help = "Quantile cut-off for annotated IBD segemnts",
@@ -130,7 +130,13 @@ if (file.exists(ref_index)) {
 } else {
   stop("Can not locate reference index. Stopping...")
 }
-    
+
+if (min_n_snp == 0 & min_l_seg == 0) {
+  filename_ext <- sprintf("win%dkb", window_size/1000)
+} else {
+  filename_ext <- sprintf("win%dkb_minsnp%d_minlen%d", window_size/1000, min_n_snp, min_l_seg)
+}
+
 combined_ibd_r <- c()
 combined_fraction_r <- c()
 
@@ -151,7 +157,7 @@ for (category_n in category_list) {
           ibd_data <- ibd_data %>%
               unite(id, sample1, sample2, sep = "_", remove = FALSE) %>%
               mutate(total = n_distinct(id),
-                    length = end - start + 1)
+                     length = end - start + 1)
           ibd_conf <- ibd_data %>%
               filter(different == 0 & Nsnp > min_n_snp & length > min_l_seg) %>%
               arrange(chr, start, end) %>%
@@ -162,7 +168,7 @@ for (category_n in category_list) {
           results <- c()
           total <- unique(ibd_conf$total)
           #TODO collapse to functions
-          for (k in seq_along(chr_vec)) {              
+          for (k in seq_along(chr_vec)) {               
               data_chr <- ibd_conf %>% filter(chr == chr_vec[k])
               length_chr <- fai %>% filter(chr == chr_vec[k]) %>%
                   select(end_chr) %>% pull()
@@ -171,25 +177,30 @@ for (category_n in category_list) {
               windows <- data.frame(chr = chr_vec[k],
                                     win_start = seq(1, length_chr, by = window_size),
                                     win_end = seqlast(window_size, length_chr, by = window_size))
-              
+              # Find overlap between IBD segments (x) and windows (y)
               x <- data.table(start = as.numeric(as.character(data_chr$pos_start)),
-                end = as.numeric(as.character(data_chr$pos_end)))
+                              end = as.numeric(as.character(data_chr$pos_end)))
               y <- data.table(start = as.numeric(as.character(windows$win_start)),
-                end = as.numeric(as.character(windows$win_end)))
+                              end = as.numeric(as.character(windows$win_end)))
 
               setkey(y, start, end)
               overlaps <- foverlaps(x, y, type = "any", which = TRUE)
-              matched <- cbind(data_chr[overlaps$xid, ], as.data.frame(y[overlaps$yid])) %>% #TODO make nicer
+              # Calculate relative positions and length of segment
+              matched <- cbind(data_chr[overlaps$xid, ], as.data.frame(y[overlaps$yid])) %>%
                       mutate(rel_start = ifelse(pos_start > start, pos_start, start),
-                            rel_end = ifelse(pos_end < end, pos_end, end),
-                            rel_length = rel_end - rel_start + 1)
+                             rel_end = ifelse(pos_end < end, pos_end, end),
+                             rel_length = rel_end - rel_start + 1)
 
-              matched_w <- windows %>% full_join(matched, by = c("chr", "win_start" = "start", "win_end" = "end"))
-              matched_wm <- matched_w %>% group_by(win_start, win_end) %>%
-                  mutate(m_sum = sum(rel_length, na.rm = T),
-                         m_sum_av = ifelse(!is.na(m_sum), m_sum / window_size, 0),
-                         fraction = m_sum_av / total) %>%
-                  select(chr, win_start, win_end, m_sum, m_sum_av, fraction) %>%
+              matched_w <- windows %>%
+                full_join(matched, by = c("chr", "win_start" = "start", "win_end" = "end"))
+              # Summarize segment in windows
+              matched_wm <- matched_w %>%
+                  group_by(win_start, win_end) %>%
+                  # fraction = sum of relative_lengths / window size / total pairwise comparisons
+                  mutate(sum_seg_len = sum(rel_length, na.rm = T),
+                         av_seg_len = ifelse(!is.na(sum_seg_len), sum_seg_len / window_size, 0),
+                         fraction = av_seg_len / total) %>%
+                  select(chr, win_start, win_end, sum_seg_len, av_seg_len, fraction) %>%
                   distinct()
               results <- rbind(results, matched_wm)
           }
@@ -212,9 +223,8 @@ for (category_n in category_list) {
 
 message("Saving...")
 if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
-  #colnames(combined_ibd_r) <- c("chr", "start", "end", "fraction", "category")
   write.table(combined_ibd_r,
-    file.path(workdir, sprintf("%s_hmmIBD_ibd.tsv", suffix)), #TODO save window, Nsnp, Length
+    file.path(workdir, sprintf("%s_hmmIBD_ibd_%s.tsv", suffix, filename_ext)),
     sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 
   colnames(combined_fraction_r) <- c("id", "category", "fraction")
@@ -231,7 +241,7 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
   # Load annotation
   if (!is.null(gene_product_file)) {
     if (file.exists(gene_product_file)) {
-    annotation <- readr::read_tsv(gene_product_file, col_types = cols())
+    annotation <- readr::read_csv(gene_product_file, col_types = cols())
 
     # Remove chromosomes
     if (!is.null(rm_chr)) {
@@ -248,7 +258,9 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
 
     # Transform chromosome from string to numeric
     annotation$chr <- as.numeric(stringr::str_match(annotation$chr, pattern)[, groupid])
-    ibd_regions <- combined_ibd_r %>% rename("start" = "win_start", "end" = "win_end") %>% select(c(chr, start, end)) %>% distinct()
+    ibd_regions <- combined_ibd_r %>%
+      rename("start" = "win_start", "end" = "win_end") %>%
+      select(c(chr, start, end)) %>% distinct()
 
     # Find overlap
     res_annot <- annotate_candidate_regions(ibd_regions, annotation)
@@ -261,8 +273,9 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
     quantile_annot <- quantile %>%
       rename("start" = "win_start", "end" = "win_end") %>%
       inner_join(res_annot) %>% ungroup()
-    write.table(quantile_annot, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_q%s.tsv", suffix, as.character(th_quantile))),
-    sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+    write.table(quantile_annot,
+               file.path(workdir, sprintf("%s_hmmIBD_ibd_%s_annotated_q%s.tsv", suffix, filename_ext, as.character(th_quantile))),
+               sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 
     # Wide format
     quantile_regs <- quantile %>% select(chr, win_start, win_end) %>% distinct()
@@ -271,14 +284,15 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
       left_join(res_annot) %>%
       select(-c(pos_start, pos_end)) %>%
       group_by(chr, start, end, category, fraction) %>%
-      dplyr::summarise(genes = paste0(gene_name, "(", X6, ")", collapse = "; "),
+      dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
       mutate(genes = gsub("\\(NA\\)", "", genes)) %>%
       mutate(fraction = round(fraction, 3)) %>%
       tidyr::pivot_wider(names_from = "category", values_from = "fraction") %>% ungroup()
 
-      write.table(quantile_annot_wide, file.path(workdir, sprintf("%s_hmmIBD_ibd_annotated_q%s_wide.tsv", suffix, as.character(th_quantile))),
-          sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+      write.table(quantile_annot_wide,
+                  file.path(workdir, sprintf("%s_hmmIBD_ibd_%s_annotated_q%s_wide.tsv", suffix, filename_ext, as.character(th_quantile))),
+                  sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
    } else {
           stop("Annotation file not found. Skiping....\n")
     }
