@@ -12,7 +12,10 @@ Filtering steps:
 * recode data to 0 (REF), 1 (ALT), -1 (MISSING)
 * !! IMPORTANT !! all missing calls are replaced to reference and all mixed calls to alternative
 
-Secondly, files produced by hmmIBD are combined across selected categories and annotated. In order to calculate cumulative fraction across genome (per population) sliding window analysis was used. Specigy window size with `--window_size` argument. Example plots and visualization can be explored in `vis_hmmIBD_results.R`.
+Secondly, files produced by hmmIBD are combined across selected categories and annotated. 
+To calculate cumulative fraction across genome (per population) sliding window analysis was used. Specify window size with `--window_size` argument.
+
+Example plots and visualization can be explored in `vis_hmmIBD_results.R`.
 
 # Env preparation
 
@@ -42,8 +45,6 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 
 * metadata - tab-separated file with description of every sample. Requires field with Fws scores, country, region or site category. Column names describing sample id (`--label-id`), country and region `--label_category`, fws score (`--label_fws`) can be defined on arguments level.
 
-* annotation - tab-separated file with description of every snp. Required columns __Chr, Pos, Ref, Alt_1, Gene_name_1__. Gene naming need to be in accordance. Can be prepared with SnpEff/CSQ.
-
 * gene/product file - tab-separated file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB. Go to _Genes_ > _Annotation,curation and identifiers_ > _Updated annotation at GeneDB_ > _Species filter_ >  _Apply_ > _Download table_.
 
 # Arguments
@@ -65,22 +66,26 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `--regex_chr` - regex pattern to detect chromosome numbering
 * `--regex_groupid` - group id for regex with numbering
 
-## parse_annotate_hmmIBD_results.R ##
+## summary_hmmIBD_results.R ## 
 
 * `-d --workdir` - working directory to save results
 * `--list_category` - file with category names per line
 * `-l --legend` - __ibd_matrix_hap_leg.tsv__ legend file (produced with previous script)
 * `--gene_product` - absolute location of annotation file. Requires to have chr, pos_start, pos_end, gene_id, product, gene_name fields. Used to annotate candidate regions.
 * `-r --ref_index` - Reference index (.fai)
+* `--maf` - MAF threshold used in previous step
 * `--window_size` - Window size for genome wide fraction calculations (default 10000)
-* `--quantile_cutoff` - 
+* `--quantile_cutoff` - Quantile cut-off for annotated IBD segemnts
 * `--suffix` - suffix for output files
-
 * `-t --threads` - optional argument to specife threads usage
 * `--remove_chr` - field to specify non nuclear chromosomes that need to be removed
 * `--regex_chr` - regex pattern to detect chromosome numbering
 * `--regex_groupid` - group id for regex with numbering
-* `--no_minimize_effect` - Add if you want to re-calculate fraction without minimizing size effect. (default FALSE). If included output files have nme at the end suffix.
+### OPTIONAL ###
+* `--NSNP` - minimal number of SNPs found in IBD segment. (Default: 0)
+* `--LSEGMENT` - minimal length of segment (Default: 0)
+
+## !DEPRECATED! parse_annotate_hmmIBD_results.R 
 
 # Run scripts
 
@@ -119,14 +124,14 @@ cat country_list.txt | xargs -I {} -P 2 sh -c 'Rscript ~/software/malaria-hub/ib
 ```
 ## Part II
 ```{bash}
-Rscript ~/software/malaria-hub/ibd/parse_annotate_hmmIBD_results.R\
+Rscript ~/software/malaria-hub/ibd/summary_hmmIBD_results.R\
 -d <workdir>\
 --list_category country_list.txt \
 --legend ibd_matrix_hap_leg.tsv \
 --gene_product <gene_product>
 --ref_index Pfalciparum.genome.fasta.fai \
 --maf 0.01 \
---windwo_size 10000 \
+--window_size 10000 \
 --quantile_cutoff 0.95 \
 --remove_chr Pf3D7_API_v3,Pf_M76611
 ```
@@ -144,11 +149,19 @@ _Results per category_
 * `hmmIBD_<category>_maf<th_maf>_out.hmm.txt` - 
 * `hmmIBD_<category>_maf<th_maf>_out.hmm.fract.txt` - 
 
-## parse_annotate_hmmIBD_results.R ##
+## summary_hmmIBD_results.R ##
 
-* `<suffix>_hmmIBD_fraction_results_combined.tsv` - table with pairwise fraction collected for all specified categories (If --no_minimize_effect option used ending with nme.tsv)
-* `<suffix>_hmmIBD_ibd_results_combined.tsv` - table with re-calculated genome-wide IBD fractions collected for all specified categories (If --no_minimize_effect option used ending with nme.tsv)
-* `<suffix>_hmmIBD_ibd_annotated_results_combined_q0.95.tsv` - table with annotated candidate regions collected for all specified categories
+* `<suffix>_hmmIBD_fraction.tsv` - table with pairwise fraction collected for all specified categories
+* `<suffix>_hmmIBD_ibd_win<window_size>kb.tsv` - table with calculated genome-wide IBD fractions collected for all specified categories
+    * __chr__ - chromosome number
+    * __win_start__ - start position of window
+    * __win_end__ - end position of window
+    * __sum_seg_len__ - sum of segment lengths
+    * __av_seg_len__ - avarage of segment lengths
+    * __fraction__ - metric (av_seg_len/total pairwise comparisons)
+    * __catgeory__ - region/country
+* `<suffix>_hmmIBD_ibd_win<window_size>kb_annotated_q<quantile_cutoff>.tsv` - table with annotated candidate regions collected for all specified categories (long format)
+* `<suffix>_hmmIBD_ibd_win<window_size>kb_annotated_q<quantile_cutoff>_wide.tsv` - table with annotated and collapsed candidate regions collected for all specified categories (wide format) [Supplementary Material]
 
 ## Visualization
 Example visualization script in `vis_hmmIBD_results.R`
