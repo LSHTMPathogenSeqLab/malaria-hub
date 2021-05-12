@@ -162,3 +162,14 @@ get_chrom_transposition <- function(chrom_map, str_chr) {
   }
   return(result)
 }
+
+# Seq vector with last element
+# https://stackoverflow.com/questions/28419281/missing-last-sequence-in-seq-in-r
+seqlast <- function (from, to, by) {
+  vec <- do.call(what = seq, args = list(from, to, by))
+  if (tail(vec, 1) != to) {
+    return(c(vec, to))
+  } else {
+    return(vec)
+  }
+}
