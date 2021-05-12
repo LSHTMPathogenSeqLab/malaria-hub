@@ -52,8 +52,8 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 ## run_hmmIBD_per_category.R ##
 
 * `-d --workdir` - working directory to save results
-* `-b --binary_matrix` - absolute location of binary matrix
-* `-m --metadata` - absolute location of metadata. Requires to have all columns specified in label_id, label_category, label_fws
+* `-b --binary_matrix` - __absolute location__ of binary matrix
+* `-m --metadata` - __absolute location__ of metadata. Requires to have all columns specified in label_id, label_category, label_fws
 * `-c --category` - name of country or region ex. Peru or Oceania that analysus will be done for
 * `--label_category` - column name in metadata file with category name ex. country/region
 * `--label_fws` - columna name in metadata file with Fws score
@@ -68,11 +68,11 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 
 ## summary_hmmIBD_results.R ## 
 
-* `-d --workdir` - working directory to save results
-* `--list_category` - file with category names per line
-* `-l --legend` - __ibd_matrix_hap_leg.tsv__ legend file (produced with previous script)
-* `--gene_product` - absolute location of annotation file. Requires to have chr, pos_start, pos_end, gene_id, product, gene_name fields. Used to annotate candidate regions.
-* `-r --ref_index` - Reference index (.fai)
+* `-d --workdir` - working directory containing results
+* `--list_category` - __absolute location__ to file with category names per line
+* `-l --legend` -  __absolute location__ of legend file *ibd_matrix_hap_leg.tsv*(produced with previous script)
+* `--gene_product` - __absolute location__ of annotation file. Requires to have chr, pos_start, pos_end, gene_id, product, gene_name fields. Used to annotate candidate regions.
+* `-r --ref_index` - __absolute location__ of reference index (.fai)
 * `--maf` - MAF threshold used in previous step
 * `--window_size` - Window size for genome wide fraction calculations (default 10000)
 * `--quantile_cutoff` - Quantile cut-off for annotated IBD segemnts
