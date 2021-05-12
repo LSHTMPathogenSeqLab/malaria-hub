@@ -94,15 +94,15 @@ min_l_seg <- opt$LSEGMENT
 setDTthreads(threads)
 
 # Load category list
-if (file.exists(file.path(workdir, category_list))) {
-    category_list <- read.table(file.path(workdir, category_list),
-    header = FALSE, stringsAsFactor = FALSE)$V1
+if (file.exists(category_list)) {
+    category_list <- read.table(category_list,
+                        header = FALSE, stringsAsFactor = FALSE)$V1
 } else {
     stop("Can not locate file with category list. Stopping...")
 }
 # Load legend
-if (file.exists(file.path(workdir, legend))) {
-  snp_hmmibd_02_1 <- read_tsv(file.path(workdir, legend)) %>%
+if (file.exists(legend)) {
+  snp_hmmibd_02_1 <- read_tsv(legend) %>%
       as.data.frame()
 } else {
   stop("Can not locate legend file. Stopping...")
@@ -241,7 +241,7 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
   # Load annotation
   if (!is.null(gene_product_file)) {
     if (file.exists(gene_product_file)) {
-    annotation <- readr::read_csv(gene_product_file, col_types = cols())
+    annotation <- readr::read_tsv(gene_product_file, col_types = cols())
 
     # Remove chromosomes
     if (!is.null(rm_chr)) {
