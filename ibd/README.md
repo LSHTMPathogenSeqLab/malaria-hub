@@ -43,9 +43,9 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 
 * binary matrix - matrix needs to be after standard filtering (__bi-allelic__ snps only). Selection analysis will be done only for nucleus chromosomes. Support matrix without apicoplast and mitochondrion chromosomes or use `--remove_chr` argument to exlude them in analysis (REQUIRED). In order to transform chromosome numbering, as default `<clone>_<number>_<version>` (Pf3D7_01_v3) pattern is used. If your species organism is not matching standard format use `--regex_chr` and `--regex_groupid` to specify your own pattern.
 
-* metadata - tab-separated file with description of every sample. Requires field with Fws scores, country, region or site category. Column names describing sample id (`--label-id`), country and region `--label_category`, fws score (`--label_fws`) can be defined on arguments level.
+* metadata - __tab-separated__ file with description of every sample. Requires field with Fws scores, country, region or site category. Column names describing sample id (`--label-id`), country and region `--label_category`, fws score (`--label_fws`) can be defined on arguments level.
 
-* gene/product file - tab-separated file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB. Go to _Genes_ > _Annotation,curation and identifiers_ > _Updated annotation at GeneDB_ > _Species filter_ >  _Apply_ > _Download table_.
+* gene/product file - __tab-separated__ file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, gene_product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB. Go to _Genes_ > _Annotation,curation and identifiers_ > _Updated annotation at GeneDB_ > _Species filter_ >  _Apply_ > _Download table_.
 
 # Arguments
 
