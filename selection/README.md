@@ -60,7 +60,7 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 
 * annotation - tab-separated file with description of every snp. Required columns __Chr, Pos, Ref, Alt_1, Gene_name_1__. Gene naming need to be in accordance. Can be prepared with SnpEff/CSQ.
 
-* gene/product file - tab-separated file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB. Go to _Genes_ > _Annotation,curation and identifiers_ > _Updated annotation at GeneDB_ -> Species filter >  Apply > Download table.
+* gene/product file - tab-separated file with information about gene/product. Required columns __chr, pos_start, pos_end, gene_id, gene_product, gene_name__ Used to annotate candidate regions. Can be extracted per species from PlasmoDB. Go to _Genes_ > _Annotation,curation and identifiers_ > _Updated annotation at GeneDB_ -> Species filter >  Apply > Download table.
 
 # Arguments
 
@@ -70,7 +70,7 @@ git clone https://github.com/LSHTMPathogenSeqLab/malaria-hub.git
 * `-b --binary_matrix` - absolute location of binary matrix
 * `-m --metadata` - absolute location of metadata. Requires to have all columns specified in label_id, label_category, label_fws
 * `-a --annotation` - absolute location of annotation file. Requires to have Chr, Pos, Ref, Alt_1, Gene_name_1 fields.
-* `-c --category` - name of country or region ex. Peru or Oceania that analysus will be done for
+* `-c --category` - name of country or region ex. Peru or Oceania that analysis will be done for
 * `--label_category` - column name in metadata file with category name ex. country/region
 * `--label_fws` - columna name in metadata file with Fws score
 * `--fws_th` - threshold for Fws score (default 0.95)
@@ -155,6 +155,7 @@ _Results per category_
 ## calculate_rehh_metrics.R ##
 
 * `plots_<category>.pdf` - collection of iHS, rBS, XPEHH plots per catgeory. SNPs that pass threshold (PVALUE > 4 or 5) are highlighted and genes that have at least two hits are labelled
+!!NOTE!! only chromosomes where snps available are displayed
 * `high_<metric>_all_categories.tsv` - table with signigicant snps for all categories
 * `cr_<metric>_all_categories_annot.tsv` - table with annotated candidate regions for all categories
 * `<category>_metrics.log` - output from metrics calculations
