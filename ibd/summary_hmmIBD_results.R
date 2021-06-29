@@ -272,7 +272,8 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
 
     quantile_annot <- quantile %>%
       rename("start" = "win_start", "end" = "win_end") %>%
-      inner_join(res_annot) %>% ungroup()
+      inner_join(res_annot) %>%
+      mutate(gene_product = gsub("\\t", "", gene_product)) %>% ungroup()
     write.table(quantile_annot,
                file.path(workdir, sprintf("%s_hmmIBD_ibd_%s_annotated_q%s.tsv", suffix, filename_ext, as.character(th_quantile))),
                sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
@@ -286,7 +287,8 @@ if (length(combined_ibd_r) != 0 & length(combined_fraction_r) != 0) {
       group_by(chr, start, end, category, fraction) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
-      mutate(genes = gsub("\\(NA\\)", "", genes)) %>%
+      mutate(genes = gsub("\\(NA\\)", "", genes),
+             products = gsub("\\t", "", products)) %>%
       mutate(fraction = round(fraction, 3)) %>%
       tidyr::pivot_wider(names_from = "category", values_from = "fraction") %>% ungroup()
 
