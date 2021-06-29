@@ -5,6 +5,9 @@ library(optparse)
 library(ggplot2)
 library(ggrepel)
 library(stringr)
+library(showtext)
+showtext_auto()
+
 
 source("~/software/malaria-hub/utils/helpers.R")
 
@@ -81,7 +84,7 @@ categories <- read.table(category_list, sep = "\n")$V1 %>% as.vector()
 # Load annotation file Chr, Pos, Ref, Alt_1, Gene_name_1
 annotation <- read.table(annotation_file, sep = "\t", fill = TRUE,
                          header = TRUE, stringsAsFactors = FALSE)
-annotation <- annotation %>% select(c(Chr, Pos, Ref, Alt_1, Gene_name_1))
+annotation <- annotation %>% select(c(chr, pos, ref, alt, Gene_name))
 
 # Load gene/product file
 gff_table <- read.csv(gene_product_file, sep = "\t",
@@ -91,8 +94,8 @@ gff_table <- read.csv(gene_product_file, sep = "\t",
 # Filter chromosome from annotation and gene product table
 if (!is.null(rm_chr)) {
   rm_chr <- strsplit(rm_chr, ",")[[1]]
-  if (all(rm_chr %in% unique(annotation$Chr))) {
-    annotation <- annotation %>% filter(!Chr %in% rm_chr)
+  if (any(rm_chr %in% unique(annotation$chr))) {
+    annotation <- annotation %>% filter(!chr %in% rm_chr)
     gff_table <- gff_table %>% filter(!chr %in% rm_chr)
   } else {
     stop("Wrong name for chromosomes to remove.")
@@ -102,7 +105,7 @@ if (!is.null(rm_chr)) {
 }
 
 # Transform chromosome names to numeric
-annotation$Chr <- as.numeric(stringr::str_match(annotation$Chr, pattern)[, groupid])
+annotation$chr <- as.numeric(stringr::str_match(annotation$chr, pattern)[, groupid])
 gff_table$chr <- as.numeric(stringr::str_match(gff_table$chr, pattern)[, groupid])
 
 
@@ -133,14 +136,15 @@ for (category in categories) {
     ihs <- rehh::ihh2ihs(ihh, min_maf = 0.0, freqbin = 0.05)
 
     if (nrow(ihs$ihs) > 1) {
-      ihsA <- ihs$ihs %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+      ihsA <- ihs$ihs %>% left_join(annotation, by = c("CHR" = "chr", "POSITION" = "pos"))
       gg_data <- gg_to_plot <- modify_df_ggplot(ihsA, th = ihs_th)
 
-      generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
+      gg <- generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                                 th = ihs_th,
                                 name = bquote(italic("iHS") ~ .(gsub("_", " " , category))),
                                 yname = ihs_expr,
                                 hcolor = "lightblue")
+      saveRDS(gg, file.path(workdir, paste0("plot_", category, ".iHS.rds")))
 
       # Annotation
       high_ihs <- ihsA %>% filter(LOGPVALUE >= ihs_th)
@@ -175,14 +179,16 @@ for (category in categories) {
           rsb <- rehh::ines2rsb(ihh, ihh_oc)
 
           if (nrow(rsb) > 1) {
-            rsbA <- rsb %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+            rsbA <- rsb %>% left_join(annotation, by = c("CHR" = "chr", "POSITION" = "pos"))
             gg_data <- gg_to_plot <- modify_df_ggplot(rsbA, th = rsb_th)
 
-            generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
+            gg <- generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                                       th = rsb_th,
                                       name = bquote(italic("Rsb") ~ .(gsub("_", " " , category)) ~ "vs." ~ .(gsub("_", " ", contr_category))),
                                       yname = rsb_expr,
                                       hcolor = "red")
+            saveRDS(gg, file.path(workdir, paste0("plot_", category, ".", contr_category, ".Rsb.rds")))
+
 
             # High significance
             high_rsb <- rsbA %>% filter(LOGPVALUE >= rsb_th)
@@ -209,14 +215,15 @@ for (category in categories) {
           xpehh <- rehh::ies2xpehh(ihh, ihh_oc)
 
           if (nrow(xpehh) > 1) {
-            xpehhA <- xpehh %>% left_join(annotation, by = c("CHR" = "Chr", "POSITION" = "Pos"))
+            xpehhA <- xpehh %>% left_join(annotation, by = c("CHR" = "chr", "POSITION" = "pos"))
             gg_data <- gg_to_plot <- modify_df_ggplot(xpehhA, th = xpehh_th)
 
-            generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
+            gg <- generate_manhattan_ggplot(gg_data$df_vis, gg_data$df_axis,
                             th = xpehh_th,
                             name = bquote(italic("XP-EHH") ~ .(gsub("_", " " , category)) ~ "vs." ~ .(gsub("_", " ", contr_category))),
                             yname = xpehh_expr,
                             hcolor = "purple")
+            saveRDS(gg, file.path(workdir, paste0("plot_", category, ".", contr_category, ".XPEHH.rds")))
 
             high_xpehh <- xpehhA %>% filter(LOGPVALUE >= xpehh_th)
             if (nrow(high_xpehh) > 1) {
@@ -255,7 +262,11 @@ if (length(high_ihs_all) != 0) {
 if (length(cr_ihs_all) != 0) {
   cr_ihs_all <- cr_ihs_all %>%
     rename("chr" = "CHR", "start" = "START", "end" = "END")
-  cr_ihs_ann <- annotate_candidate_regions(cr_ihs_all, gff_table) %>% distinct()
+  cr_ihs_ann <- annotate_candidate_regions(cr_ihs_all, gff_table) %>% select(-c(pos_start, pos_end)) %>%
+      group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
+      dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
+                       products = paste0(gene_product, collapse = "; ")) %>%
+      mutate(genes = gsub("\\(\\)", "", genes))
   write.table(cr_ihs_ann, file.path(workdir, "cr_ihs_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -268,7 +279,11 @@ if (length(high_rsb_all) != 0) {
 if (length(cr_rsb_all) != 0) {
   cr_rsb_all <- cr_rsb_all %>%
     rename("chr" = "CHR", "start" = "START", "end" = "END")
-  cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table) %>% distinct()
+  cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table) %>% select(-c(pos_start, pos_end)) %>%
+      group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
+      dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
+                       products = paste0(gene_product, collapse = "; ")) %>%
+      mutate(genes = gsub("\\(\\)", "", genes))
   write.table(cr_rsb_ann, file.path(workdir, "cr_rsb_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -282,7 +297,12 @@ if (length(high_xpehh_all) != 0) {
 if (length(cr_xpehh_all) != 0) {
   cr_xpehh_all <- cr_xpehh_all %>%
     rename("chr" = "CHR", "start" = "START", "end" = "END") %>% distinct()
-  cr_xpehh_ann <- annotate_candidate_regions(cr_xpehh_all, gff_table)
+  cr_xpehh_ann <- annotate_candidate_regions(cr_xpehh_all, gff_table) %>%
+    select(-c(pos_start, pos_end)) %>%
+      group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
+      dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
+                       products = paste0(gene_product, collapse = "; ")) %>%
+      mutate(genes = gsub("\\(\\)", "", genes))
   write.table(cr_xpehh_ann, file.path(workdir, "cr_xpehh_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
