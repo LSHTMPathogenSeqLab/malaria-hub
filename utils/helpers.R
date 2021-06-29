@@ -44,16 +44,16 @@ modify_df_ggplot <- function(df, th=4) {
   # Add highlight for snps with P > th
   # Add label for genes with at least 2 significant snps
   df <- df %>% 
-    select(CHR, POSITION, LOGPVALUE, Alt_1, Gene_name_1) %>%
+    select(CHR, POSITION, LOGPVALUE, alt, Gene_name) %>%
     mutate(CHR = as.numeric(CHR),
           POSITION = as.numeric(POSITION),
           LOGPVALUE = as.numeric(LOGPVALUE)) %>%
     filter(!is.na(LOGPVALUE)) %>%
-    group_by(Gene_name_1) %>%
+    group_by(Gene_name) %>%
     mutate(pc = sum(LOGPVALUE >= th),
            pcmax = max(LOGPVALUE, na.rm=TRUE)) %>%
     ungroup() %>%
-    mutate(is_annotate = ifelse(Gene_name_1 != "" & pc >= 2 & LOGPVALUE == pcmax, "yes", "no"),
+    mutate(is_annotate = ifelse(Gene_name != "" & pc >= 2 & LOGPVALUE == pcmax, "yes", "no"),
            is_highlight = ifelse(LOGPVALUE >= th, "yes", "no"))
           
   # Compute chromosome sizes
@@ -90,8 +90,8 @@ generate_manhattan_ggplot <- function(df, axis, th, name, yname, hcolor = "orang
       geom_point(data = subset(df, is_highlight == "yes"),
                  color = hcolor, size = 1.5) +
       geom_label_repel(data = (df %>% filter(is_annotate == "yes") %>%
-                       group_by(Gene_name_1) %>% top_n(1, LOGPVALUE)),
-                       aes(label = Gene_name_1),
+                       group_by(Gene_name) %>% top_n(1, LOGPVALUE)),
+                       aes(label = Gene_name),
                        size = 3,
                        box.padding = 0.25,
                        label.padding = 0.35,
