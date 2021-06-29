@@ -53,6 +53,9 @@ option_list = list(
   make_option("--forced_recode", type = "logical", default = FALSE,
               action = "store_true",
               help = "Recode missing to REF and mixed to ALT"),
+  make_option("--forced_mixed", type = "logical", default = FALSE,
+              action = "store_true",
+              help = "Recode mixed to ALT"),
   make_option(c("--remove_chr"), type = "character", default = NULL,
               help = "Chromosomes to remove ex. Pf3D7_API_v3,Pf_M76611",
               metavar = "character"),
@@ -100,6 +103,9 @@ workdir <- opt$workdir
 na_char <- opt$na_char
 # Recode data
 forced_recode <- opt$forced_recode
+# Recode only mixed
+forced_mixed <- opt$forced_mixed
+
 # Remove chromosomes
 rm_chr <- opt$remove_chr
 # Pattern for chromosome detection
@@ -145,9 +151,9 @@ category_str <- as.character(gsub(" ", "_", category))
 # Filter chromosome from matrix and annotation
 if (!is.null(rm_chr)) {
   rm_chr <- strsplit(rm_chr, ",")[[1]]
-  if (all(rm_chr %in% unique(snp$chr))) {
+  if (any(rm_chr %in% unique(snp$chr))) {
     snp <- snp %>% filter(!chr %in% rm_chr)
-    annotation <- annotation %>% filter(!Chr %in% rm_chr)
+    annotation <- annotation %>% filter(!chr %in% rm_chr)
   } else {
     stop("Wrong name for chromosomes to remove. Stopping...")
   }
@@ -157,7 +163,7 @@ if (!is.null(rm_chr)) {
 
 # Transform chromosome from string to numeric
 snp$chr <- as.numeric(stringr::str_match(snp$chr, pattern)[, groupid])
-annotation$Chr <- as.numeric(stringr::str_match(annotation$Chr, pattern)[, groupid])
+annotation$chr <- as.numeric(stringr::str_match(annotation$chr, pattern)[, groupid])
 
 # Check if all samples match between binary matrix and metadata file
 metadata <- metadata %>% filter(!!sym(label_id) %in% colnames(snp[, -c(1:3)]))
@@ -185,6 +191,8 @@ if (forced_recode) {
 # Set NA to ref i.e. 0
   maj3[is.na(snp_c)] <- 0
   maj3[snp_c == 0.5] <- 1
+} else if (forced_mixed) {
+  maj3[snp_c == 0.5] <- 1
 } else {
   maj3[snp_c == 0.5] <- NA
 }
@@ -199,10 +207,10 @@ rm(maf_sti)
 
 # Create MAP file with MAF filtered SNPs
 snp_d <- snp_d[to_keep_sti, ]
-snp_annot <- snp_d %>% left_join(annotation, by = c("chr" = "Chr", "pos" = "Pos", "ref" = "Ref")) %>%
+snp_annot <- snp_d %>% left_join(annotation, by = c("chr", "pos", "ref")) %>%
               tidyr::unite("info", c(chr, pos), sep = "_", remove = FALSE)
 
-map <- snp_annot %>% select(info, chr, pos, ref, Alt_1)
+map <- snp_annot %>% select(info, chr, pos, ref, alt)
 write.table(map, file.path(workdir, sprintf("snp.info.inp.%s", category_str)),
  quote = FALSE, row.names = FALSE, col.names = FALSE)
 
