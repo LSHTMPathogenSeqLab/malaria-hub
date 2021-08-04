@@ -266,7 +266,8 @@ if (length(cr_ihs_all) != 0) {
       group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
-      mutate(genes = gsub("\\(\\)", "", genes))
+      mutate(genes = gsub("\\(\\)", "", genes),
+             products = gsub("\\t", "", products))
   write.table(cr_ihs_ann, file.path(workdir, "cr_ihs_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -283,7 +284,8 @@ if (length(cr_rsb_all) != 0) {
       group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
-      mutate(genes = gsub("\\(\\)", "", genes))
+      mutate(genes = gsub("\\(\\)", "", genes),
+             products = gsub("\\t", "", products))
   write.table(cr_rsb_ann, file.path(workdir, "cr_rsb_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -302,7 +304,8 @@ if (length(cr_xpehh_all) != 0) {
       group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
-      mutate(genes = gsub("\\(\\)", "", genes))
+      mutate(genes = gsub("\\(\\)", "", genes),
+             products = gsub("\\t", "", products))
   write.table(cr_xpehh_ann, file.path(workdir, "cr_xpehh_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
