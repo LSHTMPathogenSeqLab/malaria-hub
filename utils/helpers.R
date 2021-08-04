@@ -89,16 +89,16 @@ generate_manhattan_ggplot <- function(df, axis, th, name, yname, hcolor = "orang
                                   last(seq(0, ceiling(max(df$LOGPVALUE, na.rm=TRUE)) + 1, 2)))) +
       geom_point(data = subset(df, is_highlight == "yes"),
                  color = hcolor, size = 1.5) +
+      geom_hline(yintercept = th, color = "red", alpha = 1) +
       geom_label_repel(data = (df %>% filter(is_annotate == "yes") %>%
-                       group_by(Gene_name) %>% top_n(1, LOGPVALUE)),
+                       group_by(Gene_name) %>% top_n(1, row_number())),
                        aes(label = Gene_name),
                        size = 3,
                        box.padding = 0.25,
                        label.padding = 0.35,
                        position = "identity") +
-      geom_hline(yintercept = th, color = "red", alpha = 1) +
       labs(title = name,
-           x = "Chromosomes",
+           x = "Chromosome",
            y = yname) +
       theme_classic() +
       theme(
