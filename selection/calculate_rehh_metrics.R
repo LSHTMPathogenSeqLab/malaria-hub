@@ -84,7 +84,7 @@ categories <- read.table(category_list, sep = "\n")$V1 %>% as.vector()
 # Load annotation file Chr, Pos, Ref, Alt_1, Gene_name_1
 annotation <- read.table(annotation_file, sep = "\t", fill = TRUE,
                          header = TRUE, stringsAsFactors = FALSE)
-annotation <- annotation %>% select(c(chr, pos, ref, alt, Gene_name))
+annotation <- annotation %>% select(c(chr, pos, ref, alt, Gene_name)) %>% distinct()
 
 # Load gene/product file
 gff_table <- read.csv(gene_product_file, sep = "\t",
@@ -261,13 +261,14 @@ if (length(high_ihs_all) != 0) {
  
 if (length(cr_ihs_all) != 0) {
   cr_ihs_all <- cr_ihs_all %>%
-    rename("chr" = "CHR", "start" = "START", "end" = "END")
+    rename("chr" = "CHR", "start" = "START", "end" = "END") %>% distinct()
   cr_ihs_ann <- annotate_candidate_regions(cr_ihs_all, gff_table) %>% select(-c(pos_start, pos_end)) %>%
       group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
       mutate(genes = gsub("\\(\\)", "", genes),
-             products = gsub("\\t", "", products))
+             products = gsub("\\t", "", products)) %>% ungroup() %>%
+      mutate_if(is.numeric, round, 3) %>% distinct()
   write.table(cr_ihs_ann, file.path(workdir, "cr_ihs_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -279,13 +280,16 @@ if (length(high_rsb_all) != 0) {
 }
 if (length(cr_rsb_all) != 0) {
   cr_rsb_all <- cr_rsb_all %>%
-    rename("chr" = "CHR", "start" = "START", "end" = "END")
+    rename("chr" = "CHR", "start" = "START", "end" = "END") %>% distinct()
+    write.table(cr_rsb_all, file.path(workdir, "test.tsv"),
+  quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
   cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table) %>% select(-c(pos_start, pos_end)) %>%
       group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
                        products = paste0(gene_product, collapse = "; ")) %>%
       mutate(genes = gsub("\\(\\)", "", genes),
-             products = gsub("\\t", "", products))
+             products = gsub("\\t", "", products)) %>% ungroup() %>%
+      mutate_if(is.numeric, round, 3) %>% distinct()
   write.table(cr_rsb_ann, file.path(workdir, "cr_rsb_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
@@ -301,11 +305,12 @@ if (length(cr_xpehh_all) != 0) {
     rename("chr" = "CHR", "start" = "START", "end" = "END") %>% distinct()
   cr_xpehh_ann <- annotate_candidate_regions(cr_xpehh_all, gff_table) %>%
     select(-c(pos_start, pos_end)) %>%
-      group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
-      dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
-                       products = paste0(gene_product, collapse = "; ")) %>%
-      mutate(genes = gsub("\\(\\)", "", genes),
-             products = gsub("\\t", "", products))
+    group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
+    dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
+                     products = paste0(gene_product, collapse = "; ")) %>%
+    mutate(genes = gsub("\\(\\)", "", genes),
+           products = gsub("\\t", "", products)) %>% ungroup() %>%
+    mutate_if(is.numeric, round, 3) %>% distinct()
   write.table(cr_xpehh_ann, file.path(workdir, "cr_xpehh_all_categories_annot.tsv"),
   quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
 }
