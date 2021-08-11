@@ -210,7 +210,7 @@ snp_d <- snp_d[to_keep_sti, ]
 snp_annot <- snp_d %>% left_join(annotation, by = c("chr", "pos", "ref")) %>%
               tidyr::unite("info", c(chr, pos), sep = "_", remove = FALSE)
 
-map <- snp_annot %>% select(info, chr, pos, ref, alt)
+map <- snp_annot %>% select(info, chr, pos, ref, alt) %>% distinct()
 write.table(map, file.path(workdir, sprintf("snp.info.inp.%s", category_str)),
  quote = FALSE, row.names = FALSE, col.names = FALSE)
 
