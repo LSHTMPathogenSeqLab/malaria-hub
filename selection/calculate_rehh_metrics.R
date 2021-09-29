@@ -281,8 +281,6 @@ if (length(high_rsb_all) != 0) {
 if (length(cr_rsb_all) != 0) {
   cr_rsb_all <- cr_rsb_all %>%
     rename("chr" = "CHR", "start" = "START", "end" = "END") %>% distinct()
-    write.table(cr_rsb_all, file.path(workdir, "test.tsv"),
-  quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
   cr_rsb_ann <- annotate_candidate_regions(cr_rsb_all, gff_table) %>% select(-c(pos_start, pos_end)) %>%
       group_by(chr, start, end, category_name, N_MRK, MEAN_MRK, MAX_MRK, N_EXTR_MRK, PERC_EXTR_MRK, MEAN_EXTR_MRK) %>%
       dplyr::summarise(genes = paste0(gene_id, "(", gene_name, ")", collapse = "; "),
