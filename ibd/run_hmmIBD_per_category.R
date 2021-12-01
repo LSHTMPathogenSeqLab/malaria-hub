@@ -122,7 +122,7 @@ category_str <- as.character(gsub(" ", "_", category))
 # Filter chromosome from matrix
 if (!is.null(rm_chr)) {
     rm_chr <- strsplit(rm_chr, ",")[[1]]
-    if (all(rm_chr %in% unique(snp$chr))) {
+    if (any(rm_chr %in% unique(snp$chr))) {
         snp <- snp %>% filter(!chr %in% rm_chr)
     } else {
         stop("Wrong name for chromosomes to remove. Stopping...")
