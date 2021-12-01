@@ -167,7 +167,8 @@ _Results per category_
 ## calculate_rehh_metrics.R ##
 
 * `plots_<category>.pdf` - collection of iHS, Rsb, XP-EHH plots per catgeory. SNPs that pass threshold (PVALUE > 4 or 5) are highlighted and genes that have at least two hits are labelled
-!!NOTE!! only chromosomes where snps available are displayed
+__!!NOTE!!__ only chromosomes where snps available are displayed
+* `plots_<category>.rds` - separate plots for each category and metric in `.rds` format. Can be loaded and edited in R with `readRDS` function.
 * `high_<metric>_all_categories.tsv` - table with signigicant snps for all categories
 * `cr_<metric>_all_categories_annot.tsv` - table with annotated candidate regions for all categories
 * `<category>_metrics.log` - output from metrics calculations
