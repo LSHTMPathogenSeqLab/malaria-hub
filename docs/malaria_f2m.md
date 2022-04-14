@@ -2,10 +2,15 @@
 
 Process raw samples with fastq2matrix pipeline with gVCF files as output and BQSR correction.
  
- # Create GenomicsDB
- Create DB (if it has not already existed) and import new isolates to store together VCF information. Pass the DB name (`--prefix`) and list of samples you want to include (`--sample-file`) along with directory of your gVCFs (`​--vcf-dir`). ​You can leave `--vcf-extension` (default `g.vcf.gz`) and `--num-genome-chunks`​ same as default.
+ # Create or extend GenomicsDB
+ Create DB and import new isolates to store together information from multiple VCFs. Pass the DB name (`--prefix`) and list of samples you want to include (`--sample-file`) along with a directory of your gVCFs (`--vcf-dir`) and `--vcf-extension` (default `g.vcf.gz`). Parameter `--num-genome-chunks` can be the same as default - information will be stored in `<database_name>.dbconf.json` file at the end of the run. A successful run produces a complete set of `genomics_db` folders that should exist for each genomic subregion (number of chromosomes x number of genome chunks).
 
-Tip: Create it where you have spare storage, especially for growing data set.
+ Creating and extending the database on top-level uses the same command. To extend the database make sure you use the correct database name (`--prefix`) and run command from the same directory as the existing `json` file and `genomics_db` folders. Assure that to-be-imported isolates have no overlap with previously uploaded samples that exist already in DB.
+[Read more here](https://gatk.broadinstitute.org/hc/en-us/articles/360035891051-GenomicsDB)
+
+Tip1: Create DB where you have spare storage, especially for growing data.
+Tip2: If you are extending DB (multiple imports) make a local copy of your GenomicsDB (`<database_name>_<genomic_loc>_genomics_db` folders and `<database_name>.dbconf.json`) in case of the DB gets corrupted during an erroneous import
+Tip3: Pipe logs to the file. It might be helpful to trace any ERRORs or WARNINGs
 
 ```
 python ~/software/fastq2matrix/scripts/merge_vcfs.py import \
@@ -13,17 +18,18 @@ python ~/software/fastq2matrix/scripts/merge_vcfs.py import \
     --prefix <database_name> \
     --ref <reference.fasta> \
     --vcf-dir .
+    --threads 4
 ```
 
 # Genotype and merge VCFs
-After import information is genotyped from GenomicsDB and merged into single VCF file. Only VCFs imported to GenomicsDB will be included in the file. Output `<prefix>.genotyped.vcf.gz`
+After import information is genotyped from GenomicsDB and merged into a single VCF file. Only VCFs imported to GenomicsDB will be included in the file. Output `<prefix>.genotyped.vcf.gz`
 
 ```
 python ~/software/fastq2matrix/scripts/merge_vcfs.py genotype \
     --prefix <database_name> \
     --ref <reference.fasta>
+    --threads 4
 ```
-
 
 # Filter genotyped VCF
 File created with previous script is a main input (`--merged-file`) along with VCF with known, true snps (`​--bqsr-vcf`), bed file with core genome (`--include-region`) and annotation file (`--gff-file`). Last stage is annotation with `bcftools csq`. After each filter you get 'checkpoint' file produced (can be rocognized by suffix), that can be later used in any analysis.
