@@ -49,4 +49,120 @@ grep -h CV *out
 ```
 
 ## 6. Visualize in admixture-like plot (documentation page 6)
+Script to plot admixture-like barplots is in `malaria-hub/admixture/generate_admix_barplot.R`. It produces graph in `tiff` format for __region__ and __country__ and optionally for __site__ for. Graphs can single K or multiple Ks on one plot.
 
+### Prepare ENV
+```bash
+conda create -n radmix r-essentials r-base
+R
+```
+```r
+install.packages(c("unikn", "countrycode", "optparse"))
+```
+
+
+Inputs:
+* tab-separated metadata file with sample identifier, region, coutnry and optionaly site (`--label_site`)
+* output files from ADMIXTURE runs `<prefix>.<K>.<Q>`
+* output file from PLINK with sample order `<prefix>.nosex`
+* single K or comma-separated Ks (multiple give just instant comparison but they are sorted by the first K)
+* If you want specific order of regions to display use `region_order`
+* filter population based on N `<filter_N>`
+* select specific country `<select_country>`
+
+
+```
+Options:
+	-d CHARACTER, --workdir=CHARACTER
+		Specify main directory
+
+	--prefix=CHARACTER
+		Prefix of admixture output files <prefix>.Q
+
+	--filename=CHARACTER
+		Filename for plots
+
+	-k CHARACTER, --kval=CHARACTER
+		Comma-separated K values
+
+	-m CHARACTER, --metadata=CHARACTER
+		Metadata filepath with sample, region, country (optionally) site information
+
+	--region_order=CHARACTER
+		Region order
+
+	-s CHARACTER, --select_country=CHARACTER
+		Filter per country
+
+	-f INTEGER, --filter_N=INTEGER
+		Select population with N > [default: 20]
+
+	--label_region=CHARACTER
+		Region label name in metadata file
+
+	--label_country=CHARACTER
+		Country label name in metadata file
+
+	--label_site=CHARACTER
+		Region label name in metadata file
+
+	--label_id=CHARACTER
+		Category label name in metadata file
+
+	--country_code=LOGICAL
+		Country codes
+
+	--axisx_angle=NUMERIC
+		Rotation angle for X axis labels
+
+	-h, --help
+		Show this help message and exit
+```
+
+## Example command for one K:
+
+```bash
+Rscript ~/software/malaria_hub/admixture/generate_admix_barplot.R \
+-d <workdir> \
+--prefix <prefix> \
+--kval 7
+-m <metadata> \
+--filter_N 20 \
+--label_id sample_id \
+--label_region region \
+--label_country country \
+--label_id sample_id \
+--country_code TRUE
+```
+
+## Example command for multi Ks (all in one plot but sorted based on the first):
+
+```bash
+Rscript ~/software/malaria_hub/admixture/generate_admix_barplot.R \
+-d <workdir> \
+--prefix <prefix> \
+--kval 5,6,7 
+-m <metadata> \
+--filter_N 20 \
+--label_id sample_id \
+--label_region region \
+--label_country country \
+--label_site site \
+--country_code TRUE
+```
+
+## Example to select few countries:
+```
+Rscript ~/software/malaria_hub/admixture/generate_admix_barplot.R \
+-d <workdir> \
+--prefix <prefix> \
+--kval7 
+-m <metadata> \
+--filter_N 20 \
+--label_id sample_id \
+--label_region region \
+--label_country country \
+--label_site site \
+--country_code TRUE \
+--select_country Thailand,Vietnam
+```
