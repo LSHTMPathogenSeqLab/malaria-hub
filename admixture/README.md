@@ -63,7 +63,7 @@ install.packages(c("unikn", "countrycode", "optparse"))
 
 Inputs:
 * tab-separated metadata file with sample identifier, region, coutnry and optionaly site (`--label_site`)
-* output files from ADMIXTURE runs `<prefix>.<K>.<Q>`
+* output files from ADMIXTURE runs `<prefix>.<K>.Q`
 * output file from PLINK with sample order `<prefix>.nosex`
 * single K or comma-separated Ks (multiple give just instant comparison but they are sorted by the first K)
 * If you want specific order of regions to display use `region_order`
