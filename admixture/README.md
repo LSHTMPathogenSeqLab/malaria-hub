@@ -49,7 +49,7 @@ grep -h CV *out
 ```
 
 ## 6. Visualize in admixture-like plot (documentation page 6)
-Script to plot admixture-like barplots is in `malaria-hub/admixture/generate_admix_barplot.R`. It produces graph in `tiff` format for __region__ and __country__ and optionally for __site__ for. Graphs can single K or multiple Ks on one plot.
+Script to plot admixture-like barplots is in `malaria-hub/admixture/generate_admix_barplot.R`. It produces graph in `tiff` format for __region__ and __country__ and optionally for __site__. Graphs can single K or multiple Ks on one plot.
 
 ### Prepare ENV
 ```bash
