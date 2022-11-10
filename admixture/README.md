@@ -33,7 +33,7 @@ NOTE:
 
 ### Example command for Plasmodium single K=1 run
 ```
-admixture --cv=10 -j 8 --haploid="*" -s 12345 <prefix>.bed 1 | tee log1.cv10.haploid.seed12345.out
+admixture --cv=10 -j8 --haploid="*" -s 12345 <prefix>.bed 1 | tee log1.cv10.haploid.seed12345.out
 ```
 ### Example command for Plasmodium for multiple K runs
 NOTE:
