@@ -33,7 +33,7 @@ NOTE:
 
 ### Example command for Plasmodium single K=1 run
 ```
-admixture --cv=10 -j 8 --haploid="*" -s 12345 <prefix>.bed 1 | tee log1.cv10.haploid.seed12345.out
+admixture --cv=10 -j8 --haploid="*" -s 12345 <prefix>.bed 1 | tee log1.cv10.haploid.seed12345.out
 ```
 ### Example command for Plasmodium for multiple K runs
 NOTE:
@@ -49,7 +49,7 @@ grep -h CV *out
 ```
 
 ## 6. Visualize in admixture-like plot (documentation page 6)
-Script to plot admixture-like barplots is in `malaria-hub/admixture/generate_admix_barplot.R`. It produces graph in `tiff` format for __region__ and __country__ and optionally for __site__ for. Graphs can single K or multiple Ks on one plot.
+Script to plot admixture-like barplots is in `malaria-hub/admixture/generate_admix_barplot.R`. It produces graph in `tiff` format for __region__ and __country__ and optionally for __site__. Graphs can single K or multiple Ks on one plot.
 
 ### Prepare ENV
 ```bash
@@ -63,7 +63,7 @@ install.packages(c("unikn", "countrycode", "optparse"))
 
 Inputs:
 * tab-separated metadata file with sample identifier, region, coutnry and optionaly site (`--label_site`)
-* output files from ADMIXTURE runs `<prefix>.<K>.<Q>`
+* output files from ADMIXTURE runs `<prefix>.<K>.Q`
 * output file from PLINK with sample order `<prefix>.nosex`
 * single K or comma-separated Ks (multiple give just instant comparison but they are sorted by the first K)
 * If you want specific order of regions to display use `region_order`
