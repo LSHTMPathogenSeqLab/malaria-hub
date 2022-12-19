@@ -42,7 +42,7 @@ colnames(df) <- gsub("V", "PC", colnames(df))
 color_by <- "region" # specify if coloured by region or country
 
 # Graph with PC1 an PC2
-png(file.path(workdir, paste0(prefix, ".PC12.png"))) # Save to PNG file
+png("figure_PC12.png") # Save to PNG file
 ggplot(data = df, aes(x = PC1, y = PC2,
        color = !!sym(color_by))) +
     geom_point() +
@@ -54,7 +54,7 @@ dev.off()
 
 
 # Graph with PC1 and PC3
-png(file.path(workdir, paste0(prefix, ".PC13.png"))) # Save to PNG file
+png("figure_PC13.png") # Save to PNG file
 ggplot(data = df, aes(x = PC1, y = PC3,
        color = !!sym(color_by))) +
     geom_point() +
