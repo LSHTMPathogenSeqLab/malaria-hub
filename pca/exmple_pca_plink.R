@@ -28,7 +28,7 @@ rownames(dist_m) <- desc$V1
 
 # PCA ##
 cmd <- cmdscale(dist_m, k = 10, eig = TRUE, x.ret = TRUE) # Multidimensional Scaling - might take a while
-saveRDS(cmd, file.path(workdir, paste0(prefix, ".dist.rds")) # save to RDS format
+# saveRDS(cmd, paste0(prefix, ".dist.rds") # save to RDS format
 #cmd <- readRDS(file.path(workdir, paste0(prefix, ".dist.rds"))
 vars <- calc_variance_explained(cmd) # Calculations of variance explained
 
