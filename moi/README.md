@@ -11,7 +11,7 @@ Fws metric needs to be calculated based on the relevant SNPs (coding region, bi-
 
 ### Include only coding regions
 
-Extract exon information from GFF file and create tab-separated bed file with chr, start, end columns. Use `bcftools view -T <coding.regions.bed>` option.
+Extract exon information from GFF file and create tab-separated bed file with chr, start, end columns. Use `bcftools view -R <coding.regions.bed>` option.
 
 ### Bi-allelic SNPs
 
