@@ -38,7 +38,7 @@ if (file.exists(file.path(opt$workdir, gsub("vcf.gz", "gds", opt$file)))) {
   tryCatch({
     fws_all <- getFws(isolates)
     fws_df <- data.frame(sample = names(fws_all), fws = format(fws_all, digits = 3))
-    name <- file.path(opt$workdir, stringr::str_split(gsub("vcf.gz", "gds", opt$file), "\\.")[[1]][1])
+    name <- stringr::str_split(gsub("vcf.gz", "gds", opt$file), "\\.")[[1]][1]
     write.table(fws_df, file.path(opt$workdir, sprintf("%s_moi_fws.tsv", name)),
                 quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
   }, error = function(e) {
