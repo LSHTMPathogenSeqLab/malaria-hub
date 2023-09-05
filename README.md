@@ -12,7 +12,7 @@ Each analysis has its own folder along with README.md that includes env needed, 
 * __selection__ - Calculation of selection metrics with rehh package from binary matrix based on Ernest's scripts
 * __utils__ - helper functions used across the scripts
 
-![Pipeline steps]([http://url/to/img.png](https://github.com/LSHTMPathogenSeqLab/malaria-hub/blob/master/Malaria_Pipeline.png)https://github.com/LSHTMPathogenSeqLab/malaria-hub/blob/master/Malaria_Pipeline.png)
+![Pipeline steps](https://github.com/LSHTMPathogenSeqLab/malaria-hub/blob/master/Malaria_Pipeline.png)
 
 # Info
 Please share bugs, incosistencies, ideas over an e-mail
