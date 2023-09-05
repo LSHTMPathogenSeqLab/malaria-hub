@@ -44,7 +44,7 @@ option_list = list(
   make_option(c("--rehh_min_perc_hap"), type = "numeric", default = 80,
               help = "Threshold data2haplohh % of missing data for sample [default %default]",
               metavar = "number"),
-  make_option(c("--rehh_min_perc_mrk"), type = "numeric", default = 0.01,
+  make_option(c("--rehh_min_perc_mrk"), type = "numeric", default = 70,
               help = "Threshold data2haplohh % of missing data for snp [default %default]",
               metavar = "number"),
   make_option(c("--na_char"), type = "character", default = "NA",
