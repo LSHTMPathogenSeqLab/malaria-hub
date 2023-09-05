@@ -114,7 +114,7 @@ pattern <- opt$regex_chr
 groupid <- opt$regex_groupid
 
 # Load annotation file
-annotation <- read.table(annotation_file, sep = "\t", fill = TRUE, header = TRUE, stringsAsFactors = TRUE)
+annotation <- read.table(annotation_file, sep = "\t", fill = TRUE, header = TRUE, stringsAsFactors = FALSE)
 
 # Load metadata and check available categories
 metadata <- read.csv(metadata_file, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
