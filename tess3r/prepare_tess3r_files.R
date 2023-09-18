@@ -38,7 +38,3 @@ coords <- metadata %>% select(longitude, latitude) %>%
 colnames(coords) <- c("V1", "V2")
 coordsM <- data.matrix(coords, rownames.force=FALSE)
 saveRDS(coordsM, file.path(wd, "Pf_925_coordsM.rds"))
-
-
-# Command
-#cat ../Kruns.txt | xargs -I {} sh -c 'Rscript ~/software/lshtm_scripts/tess3r/run_tess3r_general.R -b Pf_1675_matbinT.mis.rds -c Pf_1675_coordsM.rds --prefix Pf_1675 --K {} --rep 50 --threads 10 && ~/cmdping' 
