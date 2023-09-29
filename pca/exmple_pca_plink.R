@@ -1,6 +1,7 @@
 library(showtext)
 library(dplyr)
 library(ggplot2)
+library(ape)
 showtext_auto()
 
 workdir <- "" # Working directory with plink files
@@ -63,3 +64,7 @@ ggplot(data = df, aes(x = PC1, y = PC3,
     theme_classic() +
     theme(legend.position = "bottom")
 dev.off()
+
+# Export dist_m to .newick to make neighbour joining tree
+tree <- nj(dist_m)
+write.tree(phy = tree, file = file.path(workdir, paste0(prefix, ".newick")))
