@@ -1,11 +1,11 @@
 # Example PCA analysis
 
 
-## Input files / Dependencis
+## Input Files / Dependencies
 
-R (amap, ggplot2), Plink
+R (amap, ggplot2, ape), Plink
 
-* VCF file bi-allelic after all filtering steps
+* Biallelic VCF file after all filtering steps
 * Metadata with ID, country and region indication
 
 ## Run PLINK
@@ -18,7 +18,8 @@ plink --vcf <vcf-file> --distance square --double-id --allow-extra-chr --out <pr
 ```
 
 ## Work in R based on example script
-Work through script `example_pca_plink.R`, specify workdir, prefix and metadata matching your input data.
+Work through script `example_pca_plink.R`, specifying workdir, prefix, and metadata matching your input data.
 
 Figures are saved to `.png` files.
 
+Within the script, you can export the distance matrix to a .newick tree file for visualisation on [iTOL](https://itol.embl.de).
