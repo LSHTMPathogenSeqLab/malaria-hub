@@ -194,7 +194,7 @@ snp_hmmibd_02_2 <- snp_hmmibd_02_2 %>% select(all_of(fws_samples))
 snp_hmmibd_merged <- cbind(snp_hmmibd_leg, snp_hmmibd_02_2)
 
 # Write country matrix to file
-write.table(format(snp_hmmibd_merged, digits = 0),
+write.table(format(snp_hmmibd_merged),
     file.path(workdir, sprintf("hmmIBD_%s_maf%s.txt", category_str, as.character(th_maf))),
     sep = "\t", quote = FALSE, row.names = FALSE)
   
