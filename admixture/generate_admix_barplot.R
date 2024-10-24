@@ -181,12 +181,11 @@ admix_all_r <- admix_all_f %>%
   mutate(!!sym(label_id) := factor(!!sym(label_id),
          levels = unique(!!sym(label_id))))
 
-tiff(file.path(workdir, paste0(filename, ".region.tiff")),
-     width = 3000, height = 1800, res = 200)
+pdf(file.path(workdir, paste0(filename, ".region.pdf")))
 plot_gg_admix(admix_all_r, label_id, label_region, "region", pals, opt$axisx_angle)
 invisible(dev.off())
 
-message(file.path(workdir, paste0(filename, ".region.tiff")))
+message(file.path(workdir, paste0(filename, ".region.pdf")))
 
 # Country
 if (opt$country_code) {
@@ -210,11 +209,10 @@ admix_all_c <- admix_all_c %>%
     mutate(!!sym(label_id) := factor(!!sym(label_id),
             levels = unique(!!sym(label_id))))
 
-tiff(file.path(workdir, paste0(filename, ".country.tiff")),
-     width = 3000, height = 1800, res=200)
+pdf(file.path(workdir, paste0(filename, ".country.pdf")))
 plot_gg_admix(admix_all_c, label_id, label_country, "country", pals, opt$axisx_angle)
 invisible(dev.off())
-message(file.path(workdir, paste0(filename, ".country.tiff")))
+message(file.path(workdir, paste0(filename, ".country.pdf")))
 
 
 if (!is.null(label_site)) {
@@ -224,9 +222,8 @@ if (!is.null(label_site)) {
   mutate(!!sym(label_id) := factor(!!sym(label_id),
          levels=unique(!!sym(label_id))))
 
-  tiff(file.path(workdir, paste0(filename, ".country.tiff")),
-       width = 3000, height = 1800, res=200)
+  pdf(file.path(workdir, paste0(filename, ".site.pdf")))
   plot_gg_admix(admix_all_c, label_id, label_site, "site", pals, opt$axisx_angle)
   invisible(dev.off())
-  message(file.path(workdir, paste0(filename, ".site.tiff")))
+  message(file.path(workdir, paste0(filename, ".site.pdf")))
 }
