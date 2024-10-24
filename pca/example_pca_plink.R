@@ -22,6 +22,7 @@ dist <- read.table(file.path(workdir, paste0(prefix, ".dist")), header = FALSE)
 id <- read.table(file.path(workdir, paste0(prefix, ".dist.id")))
 
 desc <- id %>% left_join(met, by = c("V1" = "ID"))
+# desc <- id %>% left_join(met, by = c("V1" = "sample_id"))
 
 dist_m <- as.matrix(dist)
 colnames(dist_m) <- desc$V1
@@ -43,27 +44,25 @@ colnames(df) <- gsub("V", "PC", colnames(df))
 color_by <- "region" # specify if coloured by region or country
 
 # Graph with PC1 an PC2
-png("figure_PC12.png") # Save to PNG file
-ggplot(data = df, aes(x = PC1, y = PC2,
+p <- ggplot(data = df, aes(x = PC1, y = PC2,
        color = !!sym(color_by))) +
     geom_point() +
     labs(x = paste0("PC1", " (", vars["PC1"], "%)"),
             y = paste0("PC2", " (", vars["PC2"], "%)")) +
     theme_classic() +
     theme(legend.position = "bottom")
-dev.off()
+ggsave(plot = p, filename="PC_12.pdf")
 
 
 # Graph with PC1 and PC3
-png("figure_PC13.png") # Save to PNG file
-ggplot(data = df, aes(x = PC1, y = PC3,
+q <- ggplot(data = df, aes(x = PC1, y = PC3,
        color = !!sym(color_by))) +
     geom_point() +
     labs(x = paste0("PC1", " (", vars["PC1"], "%)"),
             y = paste0("PC3", " (", vars["PC3"], "%)")) +
     theme_classic() +
     theme(legend.position = "bottom")
-dev.off()
+ggsave(plot = q, filename = "PC_13.pdf")
 
 # Export dist_m to .newick to make neighbour joining tree
 tree <- nj(dist_m)
